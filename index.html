@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>👑</text></svg>" />
+<title>👑 Plataforma Maestra — Tracto Partes Magaña</title>
+<style>
+  :root{
+    --beige:#f2efe9;
+    --tinta:#17140f;
+    --vino:#b03a2e;
+    --oro:#c9a24b;
+    --verde:#2e7d46;
+    --papel:#fbf9f5;
+    --linea:#e3ddd1;
+    --sombra:0 2px 10px rgba(23,20,15,.10);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+    --side:180px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:var(--sans);
+    color:var(--tinta);
+    background:var(--beige);
+    display:flex;
+    overflow:hidden;
+  }
+
+  /* ============ SIDEBAR ============ */
+  aside{
+    width:var(--side);
+    min-width:var(--side);
+    height:100vh;
+    background:#17140f;
+    color:#f2efe9;
+    display:flex;
+    flex-direction:column;
+    border-right:3px solid var(--vino);
+    position:relative;
+    z-index:20;
+    transition:margin-left .25s ease;
+  }
+  .brand{
+    padding:16px 14px 13px;
+    border-bottom:1px solid rgba(201,162,75,.25);
+  }
+  .brand .k{
+    font-family:var(--sans);
+    font-size:8.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--oro);
+    margin-bottom:5px;
+  }
+  .brand h1{
+    font-family:var(--serif);
+    font-size:19px;
+    line-height:1.1;
+    margin:0;
+    color:#f7f3ea;
+  }
+  .brand .sub{
+    font-size:11px;
+    color:#c8bfae;
+    margin-top:6px;
+    font-style:italic;
+    line-height:1.3;
+  }
+  .who{
+    display:flex;align-items:center;gap:8px;
+    padding:10px 14px;
+    border-bottom:1px solid rgba(201,162,75,.15);
+    font-size:11px;color:#d9d0bf;line-height:1.3;
+  }
+  .who b{color:#f2efe9;font-weight:600}
+  .who .dot{width:8px;height:8px;border-radius:50%;background:var(--verde);box-shadow:0 0 0 3px rgba(46,125,70,.25)}
+
+  .navwrap{flex:1;overflow-y:auto;padding:6px 0 16px}
+  .grp{padding:13px 14px 5px 14px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#928873;font-weight:700}
+  nav a{
+    display:flex;align-items:center;gap:9px;
+    padding:8px 12px 8px 11px;
+    color:#e7dfce;text-decoration:none;cursor:pointer;
+    border-left:3px solid transparent;
+    transition:background .12s,border-color .12s;
+  }
+  nav a:hover{background:rgba(201,162,75,.08)}
+  nav a.active{background:rgba(176,58,46,.20);border-left-color:var(--vino)}
+  nav a.active .nm{color:#fff}
+  .ava{
+    width:30px;height:30px;border-radius:8px;flex-shrink:0;
+    display:grid;place-items:center;font-size:15px;
+    background:linear-gradient(160deg,#2a241b,#3a3227);
+    border:1px solid rgba(201,162,75,.3);
+  }
+  .meta{flex:1;min-width:0}
+  .nm{font-family:var(--serif);font-size:14px;line-height:1.05;color:#f4efe4}
+  .rl{font-size:10px;color:#b3a891;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .sdot.vivo{background:var(--verde);box-shadow:0 0 6px rgba(46,125,70,.8)}
+  .sdot.construccion{background:var(--oro)}
+
+  .sidefoot{padding:11px 12px;border-top:1px solid rgba(201,162,75,.18);display:flex;gap:6px}
+  .sidefoot button{
+    flex:1;background:transparent;border:1px solid rgba(201,162,75,.4);
+    color:#e7dfce;padding:7px 4px;border-radius:8px;cursor:pointer;font-size:11px;font-family:var(--sans);white-space:nowrap;
+    transition:background .12s;
+  }
+  .sidefoot button:hover{background:rgba(201,162,75,.14)}
+
+  /* ============ STAGE ============ */
+  main{flex:1;height:100vh;display:flex;flex-direction:column;min-width:0;position:relative}
+  .topbar{
+    height:56px;min-height:56px;
+    background:var(--papel);
+    border-bottom:1px solid var(--linea);
+    display:flex;align-items:center;gap:12px;
+    padding:0 16px;box-shadow:var(--sombra);z-index:10;
+  }
+  .hamb{display:none;background:none;border:1px solid var(--linea);border-radius:8px;width:38px;height:38px;font-size:18px;cursor:pointer;color:var(--tinta)}
+  .tb-title{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
+  .tb-title .em{font-size:22px}
+  .tb-title .txt{min-width:0}
+  .tb-title h2{font-family:var(--serif);font-size:18px;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tb-title small{font-size:11.5px;color:#7a715f}
+  .tb-actions{display:flex;gap:8px;align-items:center}
+  .btn{
+    border:1px solid var(--linea);background:#fff;color:var(--tinta);
+    padding:8px 13px;border-radius:9px;cursor:pointer;font-size:13px;font-family:var(--sans);
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:.12s;
+  }
+  .btn:hover{background:var(--beige);border-color:#cfc7b8}
+  .btn.pri{background:var(--vino);color:#fff;border-color:var(--vino)}
+  .btn.pri:hover{background:#98301f}
+  .btn.on{background:var(--tinta);color:#f2efe9;border-color:var(--tinta)}
+
+  .stage{flex:1;position:relative;overflow:hidden;background:var(--beige)}
+
+  /* Welcome / overview */
+  .overview{position:absolute;inset:0;overflow-y:auto;padding:30px 34px 60px}
+  .ov-head{max-width:1000px;margin:0 auto 26px}
+  .ov-head h3{font-family:var(--serif);font-size:29px;margin:0 0 6px}
+  .ov-head p{color:#6f6656;font-size:14.5px;margin:0;max-width:640px;line-height:1.5}
+  .cards{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+  .card{
+    background:var(--papel);border:1px solid var(--linea);border-radius:14px;padding:18px;
+    cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;position:relative;overflow:hidden;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(23,20,15,.13);border-color:var(--oro)}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--vino)}
+  .card .row1{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .card .cav{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;font-size:23px;background:#efe9dd;border:1px solid var(--linea)}
+  .card h4{font-family:var(--serif);font-size:19px;margin:0;line-height:1.1}
+  .card .crole{font-size:12px;color:#8a8069;margin-top:2px}
+  .card .cdesc{font-size:13px;color:#665d4d;line-height:1.45;min-height:38px}
+  .card .cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+  .chip{font-size:11px;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;font-weight:600}
+  .chip.vivo{background:rgba(46,125,70,.12);color:var(--verde)}
+  .chip.construccion{background:rgba(201,162,75,.16);color:#8a6d1e}
+  .card .go{font-size:12.5px;color:var(--vino);font-weight:600}
+
+  /* iframe viewers */
+  .viewer{position:absolute;inset:0;display:none}
+  .viewer.show{display:block}
+  .viewer iframe{width:100%;height:100%;border:0;background:#fff}
+  .loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--beige);z-index:2;transition:opacity .3s}
+  .loading.hide{opacity:0;pointer-events:none}
+  .spin{width:44px;height:44px;border:4px solid #ded7c8;border-top-color:var(--vino);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .loadtxt{margin-top:14px;font-family:var(--serif);color:#7a715f;font-size:15px}
+
+  .blocked{position:absolute;inset:0;display:none;place-items:center;text-align:center;padding:30px}
+  .blocked.show{display:grid}
+  .blocked .bx{max-width:420px}
+  .blocked h3{font-family:var(--serif);font-size:22px;margin:0 0 10px}
+  .blocked p{color:#6f6656;font-size:14px;line-height:1.5;margin:0 0 18px}
+
+  /* mosaic */
+  .mosaic{position:absolute;inset:0;display:none;overflow-y:auto;padding:18px;background:var(--beige)}
+  .mosaic.show{display:block}
+  .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;max-width:1400px;margin:0 auto}
+  .mtile{background:var(--papel);border:1px solid var(--linea);border-radius:12px;overflow:hidden;box-shadow:var(--sombra)}
+  .mtile .mhead{display:flex;align-items:center;gap:9px;padding:10px 13px;border-bottom:1px solid var(--linea);cursor:pointer}
+  .mtile .mhead .em{font-size:17px}
+  .mtile .mhead .mt{flex:1;min-width:0}
+  .mtile .mhead h5{margin:0;font-family:var(--serif);font-size:15px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mtile .mhead small{font-size:11px;color:#8a8069}
+  .mtile .mhead .expand{font-size:12px;color:var(--vino);font-weight:600;white-space:nowrap}
+  .mframe{position:relative;height:230px;background:#fff}
+  .mframe iframe{width:100%;height:100%;border:0;transform:scale(.9);transform-origin:0 0;width:111%;height:111%}
+  .mframe .mph{position:absolute;inset:0;display:grid;place-items:center;color:#a99;font-size:13px;background:repeating-linear-gradient(45deg,#f4efe6,#f4efe6 12px,#efe9dd 12px,#efe9dd 24px)}
+
+  /* config modal */
+  .modal{position:fixed;inset:0;background:rgba(23,20,15,.55);display:none;place-items:center;z-index:50;padding:20px}
+  .modal.show{display:grid}
+  .sheet{background:var(--papel);border-radius:16px;max-width:560px;width:100%;max-height:86vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .sheet header{padding:20px 22px;border-bottom:1px solid var(--linea);display:flex;justify-content:space-between;align-items:center}
+  .sheet header h3{font-family:var(--serif);font-size:20px;margin:0}
+  .sheet .body{padding:18px 22px}
+  .sheet .x{background:none;border:none;font-size:24px;cursor:pointer;color:#8a8069;line-height:1}
+  .cfg-item{border:1px solid var(--linea);border-radius:11px;padding:12px 13px;margin-bottom:11px;background:#fff}
+  .cfg-item .r{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .cfg-item .em{font-size:18px}
+  .cfg-item b{font-family:var(--serif);font-size:15px}
+  .cfg-item label{font-size:11px;color:#8a8069;display:block;margin-bottom:3px}
+  .cfg-item input{width:100%;padding:8px 10px;border:1px solid var(--linea);border-radius:7px;font-size:13px;font-family:var(--sans)}
+  .cfg-item input:focus{outline:none;border-color:var(--oro)}
+  .sheet footer{padding:16px 22px;border-top:1px solid var(--linea);display:flex;gap:10px;justify-content:space-between;align-items:center}
+  .hint{font-size:11.5px;color:#8a8069}
+
+  .offline{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--vino);color:#fff;padding:10px 18px;border-radius:30px;font-size:13px;display:none;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+  .offline.show{display:block}
+
+  @media(max-width:820px){
+    :root{--side:280px}
+    aside{position:fixed;left:0;top:0;margin-left:calc(-1 * var(--side) - 6px)}
+    aside.open{margin-left:0;box-shadow:0 0 40px rgba(0,0,0,.5)}
+    .hamb{display:grid;place-items:center}
+    .tb-actions .lbl{display:none}
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:15;display:none}
+    .backdrop.show{display:block}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== CANDADO (pantalla de contraseña) ===== -->
+  <div id="gate" style="position:fixed;inset:0;z-index:9999;background:#17140f;display:grid;place-items:center;padding:24px;font-family:Georgia,serif">
+    <div style="max-width:360px;width:100%;text-align:center;color:#f2efe9">
+      <div style="font-size:56px;margin-bottom:6px">👑</div>
+      <div style="font-family:-apple-system,Arial,sans-serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#c9a24b;margin-bottom:8px">Tracto Partes Magaña</div>
+      <h1 style="font-size:28px;margin:0 0 6px;color:#f7f3ea">Plataforma Maestra</h1>
+      <p style="font-family:-apple-system,Arial,sans-serif;font-size:13px;color:#b3a891;margin:0 0 22px">Área privada de Dirección. Escribe tu contraseña.</p>
+      <input id="gatePass" type="password" placeholder="Contraseña" autocomplete="current-password"
+        style="width:100%;padding:13px 15px;border-radius:10px;border:1px solid rgba(201,162,75,.4);background:#231e16;color:#f2efe9;font-size:16px;font-family:-apple-system,Arial,sans-serif;text-align:center;box-sizing:border-box" />
+      <div id="gateErr" style="font-family:-apple-system,Arial,sans-serif;color:#e0765f;font-size:12.5px;height:16px;margin:8px 0 4px"></div>
+      <button id="gateBtn" style="width:100%;padding:13px;border:none;border-radius:10px;background:#b03a2e;color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:-apple-system,Arial,sans-serif">Entrar</button>
+      <label style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-family:-apple-system,Arial,sans-serif;font-size:13px;color:#c8bfae;cursor:pointer">
+        <input id="gateRemember" type="checkbox" checked style="width:16px;height:16px" /> Recordar en esta computadora
+      </label>
+    </div>
+  </div>
+  <script>
+  (function(){
+    // 🔑 CONTRASEÑA — para cambiarla, edita SOLO el texto entre comillas de abajo:
+    var CLAVE = "maestro2026";
+    var KEY = "tpm_maestro_ok_v1";
+    var gate = document.getElementById('gate');
+    function unlock(){ gate.style.display='none'; document.body.style.overflow=''; }
+    try{ if(localStorage.getItem(KEY)==='1'){ unlock(); return; } }catch(e){}
+    document.body.style.overflow='hidden';
+    var inp=document.getElementById('gatePass'), err=document.getElementById('gateErr');
+    function tryPass(){
+      if(inp.value===CLAVE){
+        try{ if(document.getElementById('gateRemember').checked) localStorage.setItem(KEY,'1'); }catch(e){}
+        unlock();
+      } else { err.textContent='Contraseña incorrecta.'; inp.value=''; inp.focus(); }
+    }
+    document.getElementById('gateBtn').addEventListener('click',tryPass);
+    inp.addEventListener('keydown',function(e){ if(e.key==='Enter') tryPass(); });
+    setTimeout(function(){ inp.focus(); },100);
+  })();
+  </script>
+
+  <aside id="side">
+    <div class="brand">
+      <div class="k">Tracto Partes Magaña</div>
+      <h1>Plataforma<br>Maestra</h1>
+      <div class="sub">Todos los sistemas, en un solo lugar.</div>
+    </div>
+    <div class="who">
+      <span class="dot"></span>
+      <span>Sesión de <b>Eugenio</b> · Dirección</span>
+    </div>
+    <div class="navwrap" id="nav"></div>
+    <div class="sidefoot">
+      <button id="btnMosaic">▦ Ver todo</button>
+      <button id="btnCfg">⚙ Editar</button>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
+
+  <main>
+    <div class="topbar">
+      <button class="hamb" id="hamb">☰</button>
+      <div class="tb-title" id="tbTitle">
+        <span class="em">🏠</span>
+        <div class="txt">
+          <h2>Inicio</h2>
+          <small>Elige un sistema para verlo en vivo</small>
+        </div>
+      </div>
+      <div class="tb-actions" id="tbActions"></div>
+    </div>
+
+    <div class="stage" id="stage">
+      <!-- Overview -->
+      <div class="overview" id="overview">
+        <div class="ov-head">
+          <h3>Buenos días, Eugenio.</h3>
+          <p>Esta es tu vista de Director: cada tarjeta es un sistema del negocio, atendido por su responsable. Pícale a un nombre y lo ves funcionando en tiempo real, sin salir de aquí.</p>
+        </div>
+        <div class="cards" id="cards"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Config modal -->
+  <div class="modal" id="modal">
+    <div class="sheet">
+      <header>
+        <h3>⚙ Editar sistemas</h3>
+        <button class="x" id="cfgClose">×</button>
+      </header>
+      <div class="body" id="cfgBody"></div>
+      <footer>
+        <span class="hint">Se guarda solo en esta computadora.</span>
+        <div style="display:flex;gap:10px">
+          <button class="btn" id="cfgReset">Restaurar</button>
+          <button class="btn pri" id="cfgSave">Guardar</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <div class="offline" id="offline">⚠ Sin internet — los sistemas en vivo no cargarán</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const DEFAULTS = [
+    { id:'inventario', persona:'Raúl',          rol:'Jefe de Inventario',        sistema:'Inventario de Patio',      area:'Patio',           emoji:'🏗️', estado:'vivo',
+      url:'https://kenotractopartes.github.io/Inventario/',   desc:'Inventario del patio en vivo: piezas, familias, ubicaciones y salidas.' },
+    { id:'maura',      persona:'Maura',         rol:'Mostrador · Administración', sistema:'Registro de Mostrador',    area:'Administración',  emoji:'📒', estado:'vivo',
+      url:'https://maura-tracto.netlify.app/',                desc:'Registro diario: ventas, notas, abonos, egresos y estatus de chasis.' },
+    { id:'sat',        persona:'Ventas',        rol:'Mostrador de ventas',        sistema:'Buscador SAT',             area:'Ventas',          emoji:'🏷️', estado:'vivo',
+      url:'https://kenotractopartes.github.io/buscador-sat/', desc:'Clave SAT por nombre de pieza. 1,908 piezas, sin claves faltantes.' },
+    { id:'arneses',    persona:'Taller',        rol:'Ventas · Taller',            sistema:'Buscador de Arneses',      area:'Ventas',          emoji:'🔌', estado:'vivo',
+      url:'https://kenotractopartes.github.io/arneses/',      desc:'Buscador de arneses del taller, sincronizado en vivo.' },
+    { id:'iva',        persona:'Administración',rol:'Fiscal',                     sistema:'Calculadora Fiscal IVA',   area:'Administración',  emoji:'🧮', estado:'vivo',
+      url:'https://tata-tracto.netlify.app/',                 desc:'Cálculo rápido de IVA y desglose fiscal.' },
+    { id:'papa',       persona:'Papá',          rol:'Dueño · Dirección',          sistema:'Panel del Dueño',          area:'Dirección',       emoji:'👑', estado:'vivo',
+      url:'https://ai-maura-06-26.web.app/',                  desc:'Panel resumen del negocio para el dueño.' },
+    { id:'blanca',     persona:'Blanca',        rol:'Bancos · Facturas',          sistema:'Dashboard IA de Blanca',   area:'Administración',  emoji:'🤖', estado:'construccion',
+      url:'',                                                 desc:'Clasificación de correos y saldo en vivo. En construcción — pega su URL cuando esté lista.' }
+  ];
+
+  const AREAS = ['Dirección','Administración','Patio','Ventas'];
+  const LS_KEY = 'tpm_unificador_v1';
+
+  // ---- state ----
+  let systems = load();
+  const loaded = {};        // id -> true once iframe created
+  let current = null;       // active system id or null (overview)
+  let mosaicOn = false;
+
+  function load(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(LS_KEY)||'null');
+      if(saved && Array.isArray(saved.systems)){
+        // merge saved urls/estado onto defaults by id, keep any extra
+        return DEFAULTS.map(d=>{
+          const s = saved.systems.find(x=>x.id===d.id);
+          return s ? Object.assign({},d,{url:s.url,estado:s.estado||d.estado}) : d;
+        });
+      }
+    }catch(e){}
+    return DEFAULTS.map(d=>Object.assign({},d));
+  }
+  function save(){
+    localStorage.setItem(LS_KEY, JSON.stringify({systems:systems.map(s=>({id:s.id,url:s.url,estado:s.estado}))}));
+  }
+
+  const $ = s=>document.querySelector(s);
+  const stage = $('#stage');
+
+  // ---- build sidebar nav ----
+  function renderNav(){
+    const nav = $('#nav'); nav.innerHTML='';
+    AREAS.forEach(area=>{
+      const items = systems.filter(s=>s.area===area);
+      if(!items.length) return;
+      const g = document.createElement('div'); g.className='grp'; g.textContent=area; nav.appendChild(g);
+      items.forEach(s=>{
+        const a = document.createElement('a');
+        a.dataset.id=s.id;
+        a.innerHTML =
+          `<div class="ava">${s.emoji}</div>
+           <div class="meta"><div class="nm">${esc(s.persona)}</div><div class="rl">${esc(s.sistema)}</div></div>
+           <div class="sdot ${s.estado}" title="${s.estado==='vivo'?'En vivo':'En construcción'}"></div>`;
+        a.addEventListener('click',()=>openSystem(s.id));
+        nav.appendChild(a);
+      });
+    });
+  }
+
+  // ---- build overview cards ----
+  function renderCards(){
+    const c = $('#cards'); c.innerHTML='';
+    systems.forEach(s=>{
+      const card = document.createElement('div');
+      card.className='card';
+      card.innerHTML =
+        `<div class="row1"><div class="cav">${s.emoji}</div>
+           <div><h4>${esc(s.persona)}</h4><div class="crole">${esc(s.rol)}</div></div></div>
+         <div class="cdesc">${esc(s.desc)}</div>
+         <div class="cfoot">
+           <span class="chip ${s.estado}">${s.estado==='vivo'?'● En vivo':'◐ En construcción'}</span>
+           <span class="go">Abrir ${s.persona.split(' ')[0]} →</span>
+         </div>`;
+      card.addEventListener('click',()=>openSystem(s.id));
+      c.appendChild(card);
+    });
+  }
+
+  // ---- open a single system in iframe ----
+  function openSystem(id){
+    const s = systems.find(x=>x.id===id); if(!s) return;
+    mosaicOn=false; current=id;
+    closeSidebarMobile();
+
+    // topbar
+    $('#tbTitle').innerHTML =
+      `<span class="em">${s.emoji}</span>
+       <div class="txt"><h2>${esc(s.sistema)}</h2><small>Atendido por ${esc(s.persona)} · ${esc(s.rol)}</small></div>`;
+    renderActions(s);
+
+    // nav highlight
+    document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.id===id));
+
+    // hide overview + mosaic + other viewers
+    $('#overview').style.display='none';
+    $('#mosaicView') && $('#mosaicView').classList.remove('show');
+    document.querySelectorAll('.viewer').forEach(v=>v.classList.remove('show'));
+
+    if(s.estado==='construccion' || !s.url){
+      showBlocked(s, true);
+      return;
+    }
+    mountViewer(s);
+  }
+
+  function mountViewer(s){
+    let v = document.getElementById('view-'+s.id);
+    if(!v){
+      v = document.createElement('div'); v.className='viewer'; v.id='view-'+s.id;
+      v.innerHTML =
+        `<div class="loading"><div style="text-align:center"><div class="spin" style="margin:0 auto"></div><div class="loadtxt">Cargando ${esc(s.sistema)}…</div></div></div>
+         <div class="blocked"><div class="bx"><h3>No se pudo mostrar aquí</h3><p>Este sistema puede tardar o no permitir verse embebido. Ábrelo en una pestaña completa.</p><a class="btn pri" href="${esc(s.url)}" target="_blank" rel="noopener">Abrir ${esc(s.persona)} en pestaña ↗</a></div></div>
+         <iframe title="${esc(s.sistema)}" src="${esc(s.url)}" loading="lazy"></iframe>`;
+      stage.appendChild(v);
+      const iframe = v.querySelector('iframe');
+      const load = v.querySelector('.loading');
+      iframe.addEventListener('load',()=>load.classList.add('hide'));
+      // safety: hide spinner after 6s regardless
+      setTimeout(()=>load.classList.add('hide'),6000);
+    }
+    v.classList.add('show');
+  }
+
+  function showBlocked(s){
+    let v = document.getElementById('view-blank-'+s.id);
+    if(!v){
+      v = document.createElement('div'); v.className='viewer'; v.id='view-blank-'+s.id;
+      v.innerHTML =
+        `<div class="blocked show"><div class="bx">
+           <div style="font-size:52px;margin-bottom:8px">${s.emoji}</div>
+           <h3>${esc(s.sistema)}</h3>
+           <p>Este sistema todavía no tiene una dirección en vivo. Cuando esté listo, pega su URL en <b>⚙ Editar</b> y aparecerá aquí en tiempo real.</p>
+           <button class="btn pri" data-cfg>⚙ Pegar URL de ${esc(s.persona)}</button>
+         </div></div>`;
+      stage.appendChild(v);
+      v.querySelector('[data-cfg]').addEventListener('click',openCfg);
+    }
+    v.classList.add('show');
+  }
+
+  function renderActions(s){
+    const wrap = $('#tbActions');
+    if(!s){ wrap.innerHTML=''; return; }
+    const canLive = s.estado==='vivo' && s.url;
+    wrap.innerHTML =
+      `<button class="btn" id="aReload" ${canLive?'':'disabled style=opacity:.4'}>⟳ <span class="lbl">Recargar</span></button>
+       <button class="btn" id="aFull" ${canLive?'':'disabled style=opacity:.4'}>⛶ <span class="lbl">Pantalla completa</span></button>
+       ${canLive?`<a class="btn pri" href="${esc(s.url)}" target="_blank" rel="noopener">↗ <span class="lbl">Abrir en pestaña</span></a>`:''}`;
+    const rl = $('#aReload'); if(rl && canLive) rl.onclick=()=>{
+      const f=document.querySelector('#view-'+s.id+' iframe'); const l=document.querySelector('#view-'+s.id+' .loading');
+      if(f){ if(l)l.classList.remove('hide'); f.src=f.src; setTimeout(()=>l&&l.classList.add('hide'),6000);} };
+    const fu = $('#aFull'); if(fu && canLive) fu.onclick=()=>{
+      const f=document.querySelector('#view-'+s.id+' iframe'); if(f&&f.requestFullscreen)f.requestFullscreen(); };
+  }
+
+  // ---- home ----
+  function goHome(){
+    current=null; mosaicOn=false;
+    $('#overview').style.display='';
+    document.querySelectorAll('.viewer').forEach(v=>v.classList.remove('show'));
+    $('#mosaicView') && $('#mosaicView').classList.remove('show');
+    document.querySelectorAll('#nav a').forEach(a=>a.classList.remove('active'));
+    $('#tbTitle').innerHTML='<span class="em">🏠</span><div class="txt"><h2>Inicio</h2><small>Elige un sistema para verlo en vivo</small></div>';
+    renderActions(null);
+  }
+
+  // ---- mosaic (all live at once) ----
+  function toggleMosaic(){
+    mosaicOn = !mosaicOn;
+    if(!mosaicOn){ goHome(); return; }
+    current=null; closeSidebarMobile();
+    $('#overview').style.display='none';
+    document.querySelectorAll('.viewer').forEach(v=>v.classList.remove('show'));
+    document.querySelectorAll('#nav a').forEach(a=>a.classList.remove('active'));
+    $('#tbTitle').innerHTML='<span class="em">▦</span><div class="txt"><h2>Mosaico</h2><small>Todos los sistemas en vivo</small></div>';
+    renderActions(null);
+
+    let mv = $('#mosaicView');
+    if(!mv){
+      mv=document.createElement('div'); mv.className='mosaic'; mv.id='mosaicView';
+      const grid=document.createElement('div'); grid.className='mgrid';
+      systems.forEach(s=>{
+        const t=document.createElement('div'); t.className='mtile';
+        const live = s.estado==='vivo' && s.url;
+        t.innerHTML =
+          `<div class="mhead"><span class="em">${s.emoji}</span>
+             <div class="mt"><h5>${esc(s.persona)}</h5><small>${esc(s.sistema)}</small></div>
+             <span class="expand">Ampliar →</span></div>
+           <div class="mframe">${ live
+              ? `<iframe title="${esc(s.sistema)}" src="${esc(s.url)}" loading="lazy" scrolling="no"></iframe>`
+              : `<div class="mph">🚧 En construcción</div>` }</div>`;
+        t.querySelector('.mhead').addEventListener('click',()=>openSystem(s.id));
+        grid.appendChild(t);
+      });
+      mv.appendChild(grid); stage.appendChild(mv);
+    }
+    mv.classList.add('show');
+  }
+
+  // ---- config modal ----
+  function openCfg(){
+    const body=$('#cfgBody'); body.innerHTML='';
+    systems.forEach(s=>{
+      const it=document.createElement('div'); it.className='cfg-item';
+      it.innerHTML =
+        `<div class="r"><span class="em">${s.emoji}</span><b>${esc(s.persona)}</b> <span style="color:#8a8069;font-size:12px">· ${esc(s.sistema)}</span></div>
+         <label>Dirección en vivo (URL)</label>
+         <input type="url" data-id="${s.id}" value="${esc(s.url)}" placeholder="https://…" />`;
+      body.appendChild(it);
+    });
+    $('#modal').classList.add('show');
+  }
+  function saveCfg(){
+    $('#cfgBody').querySelectorAll('input[data-id]').forEach(inp=>{
+      const s=systems.find(x=>x.id===inp.dataset.id);
+      if(s){ s.url=inp.value.trim(); s.estado = s.url ? 'vivo' : 'construccion'; }
+    });
+    save();
+    // reset iframes so new URLs take effect
+    document.querySelectorAll('.viewer').forEach(v=>v.remove());
+    $('#mosaicView') && $('#mosaicView').remove();
+    renderNav(); renderCards();
+    $('#modal').classList.remove('show');
+    if(mosaicOn){ mosaicOn=false; toggleMosaic(); } else if(current){ openSystem(current); } else goHome();
+  }
+  function resetCfg(){
+    if(!confirm('¿Restaurar las direcciones originales de todos los sistemas?')) return;
+    systems = DEFAULTS.map(d=>Object.assign({},d));
+    save(); document.querySelectorAll('.viewer').forEach(v=>v.remove());
+    $('#mosaicView') && $('#mosaicView').remove();
+    renderNav(); renderCards(); $('#modal').classList.remove('show'); goHome();
+  }
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+  // ---- mobile sidebar ----
+  function openSidebarMobile(){ $('#side').classList.add('open'); $('#backdrop').classList.add('show'); }
+  function closeSidebarMobile(){ $('#side').classList.remove('open'); $('#backdrop').classList.remove('show'); }
+
+  // ---- wire up ----
+  $('#hamb').addEventListener('click',openSidebarMobile);
+  $('#backdrop').addEventListener('click',closeSidebarMobile);
+  $('#btnMosaic').addEventListener('click',()=>{ $('#btnMosaic').classList.toggle('on'); toggleMosaic(); });
+  $('#btnCfg').addEventListener('click',openCfg);
+  $('#cfgClose').addEventListener('click',()=>$('#modal').classList.remove('show'));
+  $('#cfgSave').addEventListener('click',saveCfg);
+  $('#cfgReset').addEventListener('click',resetCfg);
+  $('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') $('#modal').classList.remove('show'); });
+  $('#tbTitle').addEventListener('click',()=>{ if(current||mosaicOn){ $('#btnMosaic').classList.remove('on'); goHome(); }});
+
+  // keyboard: 1-9 to open by order, Esc home
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT') return;
+    if(e.key==='Escape'){ $('#btnMosaic').classList.remove('on'); goHome(); }
+    const n=parseInt(e.key,10);
+    if(n>=1 && n<=systems.length){ openSystem(systems[n-1].id); }
+  });
+
+  // offline banner
+  function netStatus(){ $('#offline').classList.toggle('show',!navigator.onLine); }
+  window.addEventListener('online',netStatus); window.addEventListener('offline',netStatus);
+
+  renderNav(); renderCards(); netStatus();
+})();
+</script>
+</body>
+</html>
