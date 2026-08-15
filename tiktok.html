@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Autorización de TikTok — Tractopartes Magaña</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0f0f12;
+       color:#eaeaee;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .caja{max-width:640px;width:100%;background:#17171c;border:1px solid #2a2a33;border-radius:16px;padding:30px}
+  h1{font-size:21px;margin:0 0 6px}
+  .sub{color:#9a9aa6;font-size:14px;margin-bottom:22px}
+  .codigo{background:#0b0b0e;border:1px solid #35353f;border-radius:10px;padding:16px;
+          font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:15px;
+          word-break:break-all;line-height:1.5;color:#7ee787;min-height:26px}
+  button{margin-top:14px;background:#401C86;color:#fff;border:0;border-radius:10px;
+         padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;width:100%}
+  button:active{opacity:.85}
+  .pasos{margin-top:24px;padding-top:18px;border-top:1px solid #2a2a33;color:#9a9aa6;font-size:14px;line-height:1.7}
+  .mal{color:#ff6b6b}
+  code{background:#0b0b0e;padding:2px 7px;border-radius:5px;font-size:13px;color:#eaeaee}
+</style>
+</head>
+<body>
+<div class="caja">
+  <h1 id="titulo">🎵 Autorización de TikTok</h1>
+  <div class="sub" id="sub">Este es el código que hay que darle al sistema.</div>
+
+  <div class="codigo" id="codigo">Leyendo…</div>
+  <button onclick="copiar()" id="btn">📋 Copiar el código</button>
+
+  <div class="pasos" id="pasos">
+    <b>Qué sigue:</b><br>
+    1. Copia el código de arriba<br>
+    2. En la terminal de la Mac corre:<br>
+    <code>cd ~/tracto-agente &amp;&amp; ./engine/venv/bin/python poner_llave_tiktok.py</code><br>
+    3. Pégalo cuando te lo pida. No se va a ver al pegarlo, es normal.<br><br>
+    <b style="color:#eab308">⚠️ El código dura pocos minutos.</b> Si te tardas, vuelve a
+    empezar la autorización.
+  </div>
+</div>
+
+<script>
+  // TikTok regresa aquí con ?code=... (o ?error=... si algo salió mal).
+  // Esta página NO manda el código a ningún lado: solo lo enseña para copiarlo a mano.
+  var p = new URLSearchParams(location.search);
+  var code = p.get("code"), err = p.get("error"), desc = p.get("error_description");
+  var elC = document.getElementById("codigo");
+  if (code) {
+    elC.textContent = code;
+  } else if (err) {
+    document.getElementById("titulo").textContent = "❌ No se autorizó";
+    elC.className = "codigo mal";
+    elC.textContent = (desc || err);
+    document.getElementById("btn").style.display = "none";
+    document.getElementById("pasos").innerHTML =
+      "<b>Qué pasó:</b> TikTok no dio el permiso. Vuelve a intentar la autorización desde el principio.";
+  } else {
+    elC.textContent = "(esta página se abre sola cuando autorizas la app en TikTok)";
+    document.getElementById("btn").style.display = "none";
+  }
+  function copiar(){
+    navigator.clipboard.writeText(code || "").then(function(){
+      var b = document.getElementById("btn");
+      b.textContent = "✅ Copiado";
+      setTimeout(function(){ b.textContent = "📋 Copiar el código"; }, 2200);
+    });
+  }
+</script>
+</body>
+</html>
