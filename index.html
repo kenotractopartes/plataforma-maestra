@@ -265,6 +265,109 @@
   .pie button.ok{background:var(--hueso);color:#0b0c0e;border-color:var(--hueso);font-weight:600}
   .pie button:hover{filter:brightness(1.15)}
 
+
+  /* ═══════════════════ EXTRAS ═══════════════════
+     Capa que se desliza encima. Mismo idioma que el resto: Georgia para
+     los números grandes, la sans para todo lo demás, la curva --suave.
+     OJO: no usar la clase .pie aquí — ya está ocupada por el pie del
+     modal de Ajustes y le mete justify-content:flex-end. */
+  .extras{
+    position:fixed;inset:0;z-index:70;background:#07080a;
+    display:none;overflow-y:auto;
+    padding:46px 46px 60px;
+  }
+  .extras.show{display:block;animation:aparece .4s var(--suave)}
+  .extras::before{                      /* un respiro de color arriba */
+    content:"";position:fixed;left:0;right:0;top:0;height:220px;pointer-events:none;
+    background:radial-gradient(80% 100% at 20% 0%, rgba(255,255,255,.05), transparent 70%);
+  }
+
+  .ex-cab{display:flex;align-items:baseline;gap:16px;margin-bottom:6px}
+  .ex-cab h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3.4vw,44px);
+             letter-spacing:-.02em;line-height:1}
+  .ex-cab .cuando{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#5d584e}
+  .ex-salir{
+    position:fixed;top:38px;right:44px;z-index:2;
+    width:40px;height:40px;border-radius:12px;cursor:pointer;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);
+    color:var(--hueso);font-size:17px;line-height:1;
+    transition:background .25s var(--suave),transform .25s var(--suave);
+  }
+  .ex-salir:hover{background:rgba(255,255,255,.14);transform:rotate(90deg)}
+
+  /* rejilla de tarjetas */
+  .ex-rej{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));
+    gap:16px;margin-top:30px;max-width:1320px;
+  }
+  .ex-t{
+    background:rgba(255,255,255,.032);
+    border:1px solid rgba(255,255,255,.075);
+    border-radius:17px;padding:20px 21px 18px;
+    position:relative;overflow:hidden;
+    opacity:0;transform:translateY(14px);
+  }
+  .extras.show .ex-t{opacity:1;transform:none;
+    transition:opacity .6s var(--suave),transform .6s var(--suave)}
+  .ex-t::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,#3a3630)}
+  .ex-t.ancha{grid-column:span 2}
+
+  .ex-t .rot{font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+             color:var(--tc,#6f6a60);font-weight:700;margin-bottom:13px}
+  /* Georgia trae cifras de TEXTO (el 3,4,7,9 bajan de la línea). Para UN
+     número grande se ve editorial y queda bien; para columnas, NO. */
+  .ex-n{font-family:var(--serif);font-size:47px;line-height:.95;letter-spacing:-.015em;color:var(--hueso)}
+  .ex-n .u{font-size:16px;color:#7d776b;margin-left:7px;letter-spacing:0}
+  .ex-pie{font-size:11.5px;color:#7d776b;margin-top:9px;line-height:1.5}
+
+  /* renglones de datos: aquí SÍ va la sans con cifras alineadas */
+  .ex-fila{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:7px 0;border-top:1px solid rgba(255,255,255,.055);
+    font-size:13px;
+  }
+  .ex-fila:first-of-type{border-top:0}
+  .ex-fila .et{color:#8b8578}
+  .ex-fila .va{font-variant-numeric:tabular-nums;font-weight:600;color:var(--hueso);white-space:nowrap}
+
+  /* estados */
+  .ex-t.cargando .ex-n{color:#4a453d}
+  .ex-cargando{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.13);
+    border-top-color:var(--tc,#8b8578);border-radius:50%;animation:sp 1s linear infinite}
+  .ex-t.falta{border-style:dashed;border-color:rgba(255,255,255,.10);background:transparent}
+  .ex-t.falta .ex-n{font-size:26px;color:#5d584e;font-family:var(--sans);font-weight:600}
+  .ex-nota{
+    margin-top:11px;font-size:11.5px;line-height:1.55;color:#a89f8e;
+    background:rgba(201,162,75,.09);border-left:2px solid rgba(201,162,75,.42);
+    border-radius:0 7px 7px 0;padding:8px 11px;
+  }
+  .ex-nota.mala{color:#e8b3a6;background:rgba(210,80,60,.10);border-left-color:rgba(210,80,60,.5)}
+
+  /* el candado de los pesos */
+  .ex-llave{margin-top:13px}
+  .ex-llave input{
+    width:100%;padding:9px 11px;margin-bottom:7px;border-radius:9px;font-size:13px;
+    font-family:var(--sans);background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.11);color:var(--hueso);
+  }
+  .ex-llave input:focus{outline:none;border-color:rgba(255,255,255,.34)}
+  .ex-llave button{
+    width:100%;padding:10px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;
+    font-family:var(--sans);background:var(--hueso);color:#0b0c0e;border:none;
+    transition:filter .2s;
+  }
+  .ex-llave button:hover{filter:brightness(.9)}
+  .ex-err{font-size:11.5px;color:#e0765f;margin-top:7px;min-height:15px}
+
+  .ex-sec{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#4f4a42;
+          margin:34px 0 -6px;grid-column:1/-1}
+
+  @media(max-width:760px){
+    .extras{padding:26px 20px 50px}
+    .ex-salir{top:20px;right:18px}
+    .ex-t.ancha{grid-column:span 1}     /* si no, deja una columna fantasma de 0px */
+  }
+
   @media(max-width:900px){
     :root{--riel:100%}
     .app{flex-direction:column}
@@ -280,6 +383,9 @@
   @media(prefers-reduced-motion:reduce){
     .toma.viva{animation:none}.grano{animation:none}
     .placa > *{transition-duration:.01s !important}
+    .extras.show{animation:none}
+    .extras.show .ex-t{transition-duration:.01s !important}
+    .ex-cargando{animation:none}
   }
 </style>
 </head>
@@ -315,7 +421,14 @@
 </div>
 
 <div class="tools">
+  <button id="bExtras" title="Extras — los números">▦</button>
   <button id="bAjustes" title="Ajustes">⚙</button>
+</div>
+
+<div class="extras" id="extras">
+  <button class="ex-salir" id="exSalir" title="Cerrar (Esc)">✕</button>
+  <div class="ex-cab"><h2>Extras</h2><span class="cuando" id="exCuando"></span></div>
+  <div class="ex-rej" id="exRej"></div>
 </div>
 
 <div class="modal" id="modal">
@@ -623,6 +736,254 @@
     }
   }
 
+
+  /* ═══════════════════════════════════════════════════════════════════
+     EXTRAS — los números de la empresa.
+     Todo lo que sale aquí está COMPROBADO contra los datos reales. Lo que
+     no se puede sacar se dice que no se puede, con su razón. Un número
+     inventado en una pantalla de control es peor que un hueco.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  const INV_URL = 'https://inventario-julio-26-default-rtdb.firebaseio.com';
+  const CFG_MAURA = {
+    apiKey:"AIzaSyAzr0B8M-8PeJwK0XAaHDapyLPzsvmTThY",
+    authDomain:"ai-maura-06-26.firebaseapp.com",
+    projectId:"ai-maura-06-26",
+    storageBucket:"ai-maura-06-26.firebasestorage.app",
+    messagingSenderId:"279194148183",
+    appId:"1:279194148183:web:f96d4d94dff8c8d2c7b212"
+  };
+  const DIA = 86400000;
+  const cache = {};                    // no volver a bajar lo mismo en la misma sesión
+
+  const pesos = n => '$' + Math.round(n).toLocaleString('es-MX');
+  const num   = n => n.toLocaleString('es-MX');
+
+  /* La fecha de alta de una pieza va METIDA EN LA LLAVE — no hay campo de
+     creación. Comprobado contra fechaRegistro: 685 de 685 cuadran. */
+  function fechaAlta(llave){
+    const m = llave.match(/^[a-z]+_(\d{13})_/);          // pza_ / imp_ / core_
+    if(m) return Number(m[1]);
+    const c = llave.match(/^pza_est_ch_([0-9a-z]{8})/);  // chasis, en base36
+    if(c) return parseInt(c[1],36);
+    return null;                                          // arneses: no se sabe
+  }
+
+  function tarjeta(o){
+    const t=document.createElement('div');
+    t.className='ex-t'+(o.clase?' '+o.clase:'');
+    if(o.color) t.style.setProperty('--tc',o.color);
+    t.innerHTML=`<div class="rot">${esc(o.rot)}</div>${o.cuerpo}`;
+    return t;
+  }
+  function filas(lista){
+    return lista.map(f=>`<div class="ex-fila"><span class="et">${esc(f[0])}</span><span class="va">${esc(f[1])}</span></div>`).join('');
+  }
+
+  // ── RAÚL: sale del catálogo público, sin sesión ni nada ──
+  async function pintarRaul(caja){
+    caja.innerHTML = `<div class="rot">Patio · Raúl</div>
+      <div class="ex-n"><span class="ex-cargando"></span></div>
+      <div class="ex-pie">Leyendo el catálogo…</div>`;
+    try{
+      if(!cache.fichas){
+        const r = await fetch(INV_URL+'/fichas_publicas.json',{cache:'no-store'});
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        cache.fichas = await r.json();
+      }
+      const f = Object.entries(cache.fichas||{});
+      const hoy = Date.now();
+      const enCatalogo = f.filter(([,v])=>v.web===true).length;
+      const alta7  = f.filter(([k])=>{const t=fechaAlta(k); return t && hoy-t <=  7*DIA;}).length;
+      const alta14 = f.filter(([k])=>{const t=fechaAlta(k); return t && hoy-t <= 14*DIA;}).length;
+      const vend7  = f.filter(([,v])=>v.vendida===true && hoy-(v.actualizado||0) <=  7*DIA).length;
+      const vend14 = f.filter(([,v])=>v.vendida===true && hoy-(v.actualizado||0) <= 14*DIA).length;
+      const fam = {};
+      f.forEach(([,v])=>{ if(v.web===true){ const n=v.familiaNombre||v.familia||'—'; fam[n]=(fam[n]||0)+1; }});
+      const top = Object.entries(fam).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+      caja.innerHTML = `<div class="rot">Patio · Raúl</div>
+        <div class="ex-n">${num(enCatalogo)}<span class="u">en el catálogo</span></div>
+        <div class="ex-pie">Piezas publicadas en la web. <b>No es el total del patio</b> — hay piezas sin ficha.</div>
+        <div style="margin-top:15px">
+        ${filas([
+          ['Dadas de alta · 7 días',  num(alta7)],
+          ['Dadas de alta · 14 días', num(alta14)],
+          ['Vendidas · 7 días',       num(vend7)],
+          ['Vendidas · 14 días',      num(vend14)]
+        ])}</div>
+        <div class="ex-nota">Lo vendido es fiel a <b>14 días</b>. Más atrás se queda corto:
+        a 30 días capta el 60% y a 60 el 45%, porque hay piezas que se venden sin haber tenido ficha.</div>
+        <div style="margin-top:15px">${filas(top.map(([n,c])=>[n,num(c)]))}</div>`;
+    }catch(e){
+      caja.innerHTML = `<div class="rot">Patio · Raúl</div>
+        <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
+        <div class="ex-nota mala">No se pudo leer el catálogo: ${esc(String(e.message||e))}</div>`;
+    }
+  }
+
+  // ── MAURA: pide entrar de verdad, porque aquí sí hay pesos ──
+  function cargarSDK(){
+    if(window.firebase && firebase.firestore) return Promise.resolve();
+    if(cache.sdk) return cache.sdk;
+    const uno = src => new Promise((ok,mal)=>{
+      const e=document.createElement('script'); e.src=src; e.onload=ok; e.onerror=()=>mal(new Error('no cargó '+src));
+      document.head.appendChild(e);
+    });
+    const B='https://www.gstatic.com/firebasejs/10.12.2/';
+    cache.sdk = uno(B+'firebase-app-compat.js')
+      .then(()=>Promise.all([uno(B+'firebase-auth-compat.js'), uno(B+'firebase-firestore-compat.js')]));
+    return cache.sdk;
+  }
+  function appMaura(){
+    try{ return firebase.app('maura'); }catch(e){ return firebase.initializeApp(CFG_MAURA,'maura'); }
+  }
+
+  function pedirLlave(caja){
+    caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+      <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#8b8578">Bajo llave</div>
+      <div class="ex-pie">Aquí hay pesos. Entra con tu cuenta para verlos —
+      la contraseña de esta página no alcanza, y así está bien.</div>
+      <div class="ex-llave">
+        <input type="email" id="mCorreo" placeholder="tu correo" autocomplete="username" value="kenotractopartes@gmail.com" />
+        <input type="password" id="mClave" placeholder="contraseña" autocomplete="current-password" />
+        <button id="mEntrar">Ver los números</button>
+        <div class="ex-err" id="mErr"></div>
+      </div>`;
+    const ir = async ()=>{
+      const err=caja.querySelector('#mErr'); err.textContent='';
+      const correo=caja.querySelector('#mCorreo').value.trim();
+      const clave =caja.querySelector('#mClave').value;
+      if(!correo||!clave){ err.textContent='Faltan datos.'; return; }
+      caja.querySelector('#mEntrar').textContent='Entrando…';
+      try{
+        await cargarSDK();
+        const a = appMaura().auth();
+        await a.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+        await a.signInWithEmailAndPassword(correo, clave);
+        pintarMaura(caja);
+      }catch(e){
+        const c=String(e.code||'');
+        err.textContent =
+          (c.indexOf('wrong-password')>=0 || c.indexOf('invalid-credential')>=0) ? 'Correo o contraseña equivocados.' :
+          c.indexOf('user-not-found')>=0 ? 'Ese correo no tiene cuenta aquí.' :
+          c.indexOf('too-many')>=0 ? 'Muchos intentos. Espérate tantito.' :
+          (e.message||'No se pudo entrar.');
+        const b=caja.querySelector('#mEntrar'); if(b) b.textContent='Ver los números';
+      }
+    };
+    caja.querySelector('#mEntrar').addEventListener('click',ir);
+    caja.querySelector('#mClave').addEventListener('keydown',ev=>{ if(ev.key==='Enter') ir(); });
+  }
+
+  async function pintarMaura(caja){
+    caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+      <div class="ex-n"><span class="ex-cargando"></span></div>
+      <div class="ex-pie">Bajando registros…</div>`;
+    try{
+      await cargarSDK();
+      const db = appMaura().firestore();
+      if(!cache.maura){
+        /* Cada documento guarda el registro ENTERO como TEXTO en el campo
+           'json'. Firestore no puede filtrar por fecha, así que hay que
+           bajar la colección completa y partirla aquí. ~1,860 lecturas. */
+        const leer = async col => {
+          const snap = await db.collection(col).get();
+          const out=[];
+          snap.forEach(d=>{ try{ const o=JSON.parse(d.data().json); if(o) out.push(o); }catch(e){} });
+          return out;
+        };
+        const dos = await Promise.all([leer('maura_ingresos'), leer('maura_egresos')]);
+        cache.maura = {ing:dos[0], egr:dos[1]};
+      }
+      const ing=cache.maura.ing, egr=cache.maura.egr;
+      const d = new Date();
+      const iso = x => x.toISOString().slice(0,10);
+      const hoy = iso(d);
+      const hace = n => iso(new Date(d.getTime()-n*DIA));
+      const d7 = hace(7), d30 = hace(30);
+
+      const enRango=(r,desde)=> r.fecha && r.fecha>=desde && r.fecha<=hoy;
+      const suma=(l)=>l.reduce((a,r)=>a+(Number(r.monto)||0),0);
+
+      const i7=ing.filter(r=>enRango(r,d7)),  i30=ing.filter(r=>enRango(r,d30));
+      const e7=egr.filter(r=>enRango(r,d7)),  e30=egr.filter(r=>enRango(r,d30));
+      const iHoy=ing.filter(r=>r.fecha===hoy), eHoy=egr.filter(r=>r.fecha===hoy);
+
+      // los abonos viven DENTRO del registro, y cada uno trae su propia fecha
+      let ab7=0, abM7=0;
+      const cuentaAbonos=(lista,campo)=>lista.forEach(r=>(r[campo]||[]).forEach(a=>{
+        if(a && a.fecha && a.fecha>=d7 && a.fecha<=hoy){ ab7++; abM7 += Number(a.monto)||0; }
+      }));
+      cuentaAbonos(ing,'abonosExtras'); cuentaAbonos(egr,'abonosExtrasEgr');
+
+      caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+        <div class="ex-n">${pesos(suma(i7))}<span class="u">7 días</span></div>
+        <div class="ex-pie">Ingresos registrados en el mostrador.</div>
+        <div style="margin-top:15px">
+        ${filas([
+          ['Ingresos · hoy',     num(iHoy.length)+'  ·  '+pesos(suma(iHoy))],
+          ['Ingresos · 7 días',  num(i7.length)+'  ·  '+pesos(suma(i7))],
+          ['Ingresos · 30 días', num(i30.length)+'  ·  '+pesos(suma(i30))],
+          ['Egresos · hoy',      num(eHoy.length)+'  ·  '+pesos(suma(eHoy))],
+          ['Egresos · 7 días',   num(e7.length)+'  ·  '+pesos(suma(e7))],
+          ['Egresos · 30 días',  num(e30.length)+'  ·  '+pesos(suma(e30))],
+          ['Abonos · 7 días',    num(ab7)+'  ·  '+pesos(abM7)]
+        ])}</div>
+        <div class="ex-nota">El <b>bono</b> no sale aquí porque no existe en el sistema de Maura:
+        es una cuenta semanal aparte que además necesita el libro de Blanca.</div>`;
+    }catch(e){
+      const c=String(e.code||e.message||e);
+      caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+        <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
+        <div class="ex-nota mala">${c.indexOf('permission')>=0
+          ? 'Esa cuenta no tiene permiso de leer los datos de Maura.'
+          : 'No se pudo leer: '+esc(c)}</div>`;
+    }
+  }
+
+  function faltante(rot,titulo,razon,color){
+    return tarjeta({rot:rot, color:color, clase:'falta', cuerpo:
+      `<div class="ex-n">${esc(titulo)}</div><div class="ex-nota">${razon}</div>`});
+  }
+
+  function abrirExtras(){
+    const rej=$('#exRej'); rej.innerHTML='';
+    const f=new Date();
+    $('#exCuando').textContent = f.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+
+    const cRaul=tarjeta({rot:'Patio · Raúl', color:'#e0563f', cuerpo:''});
+    const cMaura=tarjeta({rot:'Mostrador · Maura', color:'#d8a53f', cuerpo:''});
+    rej.appendChild(cRaul); rej.appendChild(cMaura);
+
+    const sep=document.createElement('div'); sep.className='ex-sec';
+    sep.textContent='Falta conectar'; rej.appendChild(sep);
+
+    rej.appendChild(faltante('Página web','Falta el robot',
+      'Las visitas viven en Google Analytics, y eso pide una llave secreta que no puede estar en una página pública. Hace falta un robot en la Mac que baje el número y lo publique.','#3b3fb8'));
+    rej.appendChild(faltante('Catálogo','Falta el robot',
+      'Mismo caso que la página web, y es una propiedad distinta de Analytics.','#3f9e63'));
+    rej.appendChild(faltante('Videos · Ricardo','No se puede desde aquí',
+      'El sistema de videos vive en tu Mac. Chrome no deja que una página pública le pregunte nada a tu computadora. Sus números tienen que salir por el mismo robot.','#cf5a92'));
+    rej.appendChild(faltante('Piezas y envíos','Falta permiso',
+      'Dar de alta, poner precio y los envíos viven en un nodo cerrado con el correo de Raúl. Tú no tienes cuenta en ese proyecto todavía.','#e0563f'));
+
+    $('#extras').classList.add('show');
+    document.body.style.overflow='hidden';
+    // que las tarjetas entren escalonadas, como la placa
+    [].slice.call(rej.querySelectorAll('.ex-t')).forEach(function(t,i){ t.style.transitionDelay=(i*0.05)+'s'; });
+
+    pintarRaul(cRaul);
+    cargarSDK().then(function(){
+      const a=appMaura().auth();
+      a.onAuthStateChanged(function(u){ if(u) pintarMaura(cMaura); else pedirLlave(cMaura); });
+    }).catch(function(){ pedirLlave(cMaura); });
+  }
+  function cerrarExtras(){ $('#extras').classList.remove('show'); document.body.style.overflow=''; }
+
+  $('#bExtras').addEventListener('click',abrirExtras);
+  $('#exSalir').addEventListener('click',cerrarExtras);
+
   $('#bAjustes').addEventListener('click',abrirAjustes);
   $('#bCerrar').addEventListener('click',()=>$('#modal').classList.remove('show'));
   $('#bGuardar').addEventListener('click',guardarAjustes);
@@ -632,6 +993,10 @@
   // teclado: flechas para moverse, Enter para entrar (como en la tele)
   document.addEventListener('keydown',e=>{
     if(e.target.tagName==='INPUT') return;
+    if($('#extras').classList.contains('show')){
+      if(e.key==='Escape') cerrarExtras();
+      return;
+    }
     if($('#modal').classList.contains('show')){ if(e.key==='Escape') $('#modal').classList.remove('show'); return; }
     if(e.key==='ArrowDown'){ e.preventDefault(); elegir(Math.min(sel+1,sist.length-1)); }
     if(e.key==='ArrowUp'){   e.preventDefault(); elegir(Math.max(sel-1,0)); }
