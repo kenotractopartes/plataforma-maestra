@@ -143,7 +143,7 @@
     font-size:clamp(38px,5.6vw,86px);line-height:.98;letter-spacing:-.02em;
     text-shadow:0 4px 26px rgba(0,0,0,.92),0 2px 60px rgba(0,0,0,.7);
   }
-  .placa .linea{height:2px;width:0;background:var(--c);margin:26px 0 22px;border-radius:2px;
+  .placa .linea{height:2px;width:0;background:var(--c);margin:28px 0 4px;border-radius:2px;
                 transition:width .8s var(--suave) .1s}
   .placa.entra .linea{width:88px}
   .placa p{max-width:34ch;font-size:15px;line-height:1.6;color:#ddd7ca;
@@ -157,7 +157,7 @@
     margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#6a6459;
   }
   .placa .entrar{
-    margin-top:34px;pointer-events:auto;align-self:flex-start;
+    margin-top:30px;pointer-events:auto;align-self:flex-start;
     display:inline-flex;align-items:center;gap:11px;
     padding:14px 26px;border-radius:40px;cursor:pointer;
     background:var(--hueso);color:#0b0c0e;border:none;
@@ -176,8 +176,7 @@
   .placa.entra .arriba{transition-delay:.02s}
   .placa.entra h1{transition-delay:.09s}
   .placa.entra .linea{opacity:1;transform:none;transition-delay:.16s}
-  .placa.entra p{transition-delay:.2s}
-  .placa.entra .entrar{transition-delay:.28s}
+  .placa.entra .entrar{transition-delay:.22s}
 
   /* ══════════════ HERRAMIENTAS (abajo, discretas) ══════════════ */
   .tools{position:fixed;left:46px;bottom:30px;z-index:5;display:flex;gap:8px;
@@ -431,15 +430,10 @@
     p.classList.remove('entra');
     const listo = !!(s.url || s.alt);
     // si vive en la Mac, decir desde dónde se está alcanzando
-    let extra='';
-    if(s.casa){
-      extra = `<div class="dedonde">· Vive en esta Mac · funciona con o sin internet</div>`;
-    }
+    // Keno: nada de textos que le expliquen lo que ya sabe. Solo el nombre y el botón.
     p.innerHTML=`<div class="arriba">${esc(s.linea)}</div>
       <h1>${esc(s.quien)}</h1>
       <div class="linea"></div>
-      <p>${esc(s.texto)}</p>
-      ${extra}
       <button class="entrar${listo?'':' pendiente'}">${listo?'Entrar &nbsp;→':'En construcción'}</button>`;
     if(listo) p.querySelector('.entrar').addEventListener('click',entrar);
     requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add('entra')));
