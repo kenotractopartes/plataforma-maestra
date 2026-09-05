@@ -144,6 +144,14 @@
   .placa.entra .linea{width:88px}
   .placa p{max-width:34ch;font-size:15px;line-height:1.6;color:#ddd7ca;
            text-shadow:0 2px 14px rgba(0,0,0,.95),0 1px 30px rgba(0,0,0,.8)}
+  .placa .nota{
+    margin-top:14px;font-size:12.5px;line-height:1.55;max-width:34ch;
+    color:#f0b5a9;background:rgba(210,80,60,.12);border-left:2px solid rgba(210,80,60,.55);
+    border-radius:0 8px 8px 0;padding:9px 13px;
+  }
+  .placa .dedonde{
+    margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#6a6459;
+  }
   .placa .entrar{
     margin-top:34px;pointer-events:auto;align-self:flex-start;
     display:inline-flex;align-items:center;gap:11px;
@@ -319,6 +327,10 @@
     { id:'papa',       quien:'Papá',           quees:'Panel de dirección',    color:'#c9a24b', foto:'img/f1.jpg',
       url:'https://ai-maura-06-26.web.app/',                  emoji:'👑', linea:'Dirección',
       texto:'El resumen del negocio, en números, para el dueño.' },
+    { id:'videos',     quien:'Videos',         quees:'Producción de reels',   color:'#cf5a92', foto:'img/f2.jpg',
+      url:'https://localhost:8750/', alt:'https://192.168.1.7:8750/', casa:true,
+      emoji:'🎬', linea:'El estudio',
+      texto:'Arma los reels y las fotos de producto. Vive en tu Mac, no en internet.' },
     { id:'blanca',     quien:'Blanca',         quees:'Bancos y facturas',     color:'#5e93a3', foto:'img/f3.jpg',
       url:'',                                                 emoji:'🤖', linea:'Bancos',
       texto:'Clasificación de correos y saldo en vivo. Todavía en construcción.' }
@@ -347,13 +359,13 @@
       const p=prev.find(x=>x.id===b.id)||{};
       let url=(p.url!==undefined&&p.url!==null)?p.url:b.url;
       const fix=ARREGLOS[String(url).trim().toLowerCase()]; if(fix) url=fix;
-      return Object.assign({},b,{url:url,color:p.color||b.color,
+      return Object.assign({},b,{url:url,alt:(p.alt!==undefined?p.alt:b.alt),color:p.color||b.color,
         orden:(typeof p.orden==='number')?p.orden:BASE.indexOf(b)});
     }).sort((a,b)=>a.orden-b.orden).map((s,i)=>{s.orden=i;return s;});
   }
   function guardar(){
     try{ localStorage.setItem(LS,JSON.stringify({systems:sist.map(s=>
-      ({id:s.id,url:s.url,color:s.color,orden:s.orden}))})); }catch(e){}
+      ({id:s.id,url:s.url,alt:s.alt,color:s.color,orden:s.orden}))})); }catch(e){}
   }
 
   /* ── el fondo: una capa por sistema, se cruzan con fundido ── */
@@ -395,11 +407,20 @@
   function pintarPlaca(){
     const s=sist[sel], p=$('#placa');
     p.classList.remove('entra');
-    const listo = !!s.url;
+    const listo = !!(s.url || s.alt);
+    // si vive en la Mac, decir desde dónde se está alcanzando
+    let extra='';
+    if(s.casa && s.estadoRed==='caido'){
+      extra = `<div class="nota"><b>No responde.</b> Revisa que la Mac esté prendida
+               y que estés en el WiFi del negocio. Si le cambió la IP, corrígela en ⚙.</div>`;
+    } else if(s.casa && s.viva){
+      extra = `<div class="dedonde">${s.viva.indexOf('localhost')>=0?'· en esta Mac':'· por la red del negocio'}</div>`;
+    }
     p.innerHTML=`<div class="arriba">${esc(s.linea)}</div>
       <h1>${esc(s.quien)}</h1>
       <div class="linea"></div>
       <p>${esc(s.texto)}</p>
+      ${extra}
       <button class="entrar${listo?'':' pendiente'}">${listo?'Entrar &nbsp;→':'En construcción'}</button>`;
     if(listo) p.querySelector('.entrar').addEventListener('click',entrar);
     requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add('entra')));
@@ -412,10 +433,12 @@
     pintarEscena(sist[sel]); pintarPlaca();
   }
   function entrar(){
-    const s=sist[sel]; if(!s.url) return;
+    const s=sist[sel];
+    const d = s.viva || s.url;          // la que contestó; si no, la de siempre
+    if(!d) return;
     try{ localStorage.setItem(LSULT,s.id); }catch(e){}   // para dejarlo listo la próxima
-    const sep=s.url.indexOf('?')===-1?'?':'&';
-    window.open(s.url+sep+'_v='+Date.now(),'_blank','noopener');  // número nuevo = nunca la copia de ayer
+    const sep=d.indexOf('?')===-1?'?':'&';
+    window.open(d+sep+'_v='+Date.now(),'_blank','noopener');  // número nuevo = nunca la copia de ayer
   }
 
   /* ── Precarga: baja las fotos calladito para que al cambiar de
@@ -430,12 +453,23 @@
         (caído, dominio vencido, http:// bloqueado). NO detecta un 404
         ni si el contenido está mal — el navegador no deja leer eso de
         otro dominio. Se avisa como «responde», no como «todo bien». ── */
-  function revisarUno(s){
-    if(!s.url) return Promise.resolve('sin-url');
+  function tocar(u,ms){
+    if(!u) return Promise.resolve(false);
     return Promise.race([
-      fetch(s.url,{mode:'no-cors',cache:'no-store'}).then(()=>'enpie').catch(()=>'caido'),
-      new Promise(r=>setTimeout(()=>r('caido'),9000))
+      fetch(u,{mode:'no-cors',cache:'no-store'}).then(()=>true).catch(()=>false),
+      new Promise(r=>setTimeout(()=>r(false),ms||9000))
     ]);
+  }
+  /* Los de casa (la plataforma de videos) viven en la Mac. Se prueba
+     primero localhost — que solo jala EN la Mac — y si no contesta se
+     intenta la IP del negocio, para que sirva desde el mostrador o el
+     celular estando en el mismo WiFi. */
+  async function revisarUno(s){
+    if(!s.url && !s.alt) return 'sin-url';
+    s.viva = null;
+    if(await tocar(s.url, s.casa?4000:9000)){ s.viva=s.url; return 'enpie'; }
+    if(s.alt && await tocar(s.alt, 4000)){    s.viva=s.alt; return 'enpie'; }
+    return 'caido';
   }
   function pintarFoco(id,estado){
     const i=sist.findIndex(x=>x.id===id); if(i<0) return;
@@ -448,7 +482,11 @@
   async function semaforo(){
     document.querySelectorAll('.apagado').forEach(d=>d.classList.add('revisando'));
     const r = await Promise.all(sist.map(async s=>({id:s.id, quien:s.quien, e:await revisarUno(s)})));
-    r.forEach(x=>pintarFoco(x.id,x.e));
+    r.forEach(x=>{
+      pintarFoco(x.id,x.e);
+      const s=sist.find(y=>y.id===x.id); if(s) s.estadoRed=x.e;
+    });
+    if(sist[sel] && sist[sel].casa) pintarPlaca();   // el de casa cambia su texto según responda
     const muertos = r.filter(x=>x.e==='caido');
     const av=$('#caida');
     if(muertos.length){
@@ -473,6 +511,10 @@
         <label>Dirección</label>
         <input type="url" data-u="${esc(s.id)}" value="${esc(s.url)}" placeholder="https://…" />
         <div class="aviso${inseguro(s.url)?' show':''}">⚠ Empieza con http:// — ponle la «s».</div>
+        ${s.casa?`<label style="margin-top:11px">Si no contesta, intentar en</label>
+        <input type="url" data-a="${esc(s.id)}" value="${esc(s.alt||'')}" placeholder="https://192.168.1.7:8750/" />
+        <div style="font-size:11px;color:#6f6a60;margin-top:6px;line-height:1.5">
+          La IP de tu Mac en el negocio. Si el módem se la cambia, actualízala aquí.</div>`:''}
         <div class="abajo"><input type="color" data-c="${esc(s.id)}" value="${esc(s.color)}" />
           <span style="font-size:11.5px;color:#6f6a60">Color de ${esc(s.quien)}</span></div>`;
       it.querySelector('[data-sube]').addEventListener('click',()=>mover(s.id,-1));
@@ -487,6 +529,7 @@
   function leer(){
     const c=$('#cuerpo'); if(!c) return;
     c.querySelectorAll('input[data-u]').forEach(i=>{const s=sist.find(x=>x.id===i.dataset.u); if(s)s.url=i.value.trim();});
+    c.querySelectorAll('input[data-a]').forEach(i=>{const s=sist.find(x=>x.id===i.dataset.a); if(s)s.alt=i.value.trim();});
     c.querySelectorAll('input[data-c]').forEach(i=>{const s=sist.find(x=>x.id===i.dataset.c); if(s)s.color=i.value;});
   }
   function mover(id,paso){
@@ -503,6 +546,7 @@
     leer(); guardar();
     pintarRiel(); pintarEscena(sist[sel]); pintarPlaca();
     $('#modal').classList.remove('show');
+    semaforo();                                  // cambió una dirección: vuelve a revisar
   }
   function restaurar(){
     if(!confirm('¿Restaurar direcciones, orden y colores?')) return;
