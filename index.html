@@ -427,7 +427,8 @@
 
 <div class="extras" id="extras">
   <button class="ex-salir" id="exSalir" title="Cerrar (Esc)">✕</button>
-  <div class="ex-cab"><h2>Extras</h2><span class="cuando" id="exCuando"></span></div>
+  <div class="ex-cab"><h2>Extras</h2><span class="cuando" id="exCuando"></span>
+    <span class="cuando" id="exSello"></span></div>
   <div class="ex-rej" id="exRej"></div>
 </div>
 
@@ -942,6 +943,94 @@
     }
   }
 
+
+  /* ── Los números que deja el robot todos los días a las 19:55.
+        Contrato (creció el 5 sep): cada propiedad trae ahorita/hoy/ayer/d7/d30,
+        y arriba un 'actualizado' en milisegundos.
+        ⚠️ Si el dato está viejo, la pantalla lo DICE. Un número de anteayer
+        enseñado como si fuera de hoy es exactamente la falla disfrazada de
+        dato que ya nos costó caro antes. ── */
+  function haceCuanto(ms){
+    const h = (Date.now()-ms)/3600000;
+    if(h < 1.5)  return {txt:'hace un rato', viejo:false};
+    if(h < 24)   return {txt:'hace '+Math.round(h)+' h', viejo:false};
+    const d = Math.round(h/24);
+    return {txt:'hace '+d+(d===1?' día':' días'), viejo:h>30};
+  }
+  function nombreVideo(n){
+    const m = String(n).match(/^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/);
+    if(!m) return n;
+    return m[3]+'/'+m[2]+' · '+m[4]+':'+m[5];
+  }
+
+  function pintarSitio(caja, rot, d, viejo){
+    if(!d){ caja.innerHTML=`<div class="rot">${esc(rot)}</div>
+      <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#5d584e">Sin datos</div>
+      <div class="ex-nota">El robot todavía no ha dejado nada para esta propiedad.</div>`; return; }
+    const vivo = (d.ahorita||0) > 0;
+    caja.innerHTML = `<div class="rot">${esc(rot)}</div>
+      <div class="ex-n">${num(d.hoy||0)}<span class="u">hoy</span></div>
+      <div class="ex-pie">${ vivo
+        ? '<b style="color:#4f9e6a">● '+num(d.ahorita)+'</b> ahorita mismo, en los últimos 30 minutos.'
+        : 'Nadie en los últimos 30 minutos.' }</div>
+      <div style="margin-top:15px">
+      ${filas([
+        ['Ayer',     num(d.ayer||0)],
+        ['7 días',   num(d.d7||0)],
+        ['30 días',  num(d.d30||0)]
+      ])}</div>
+      ${viejo ? '<div class="ex-nota mala">⚠ Estos números están viejos — el robot no ha corrido. Puede ser que la Mac estuviera dormida.</div>' : ''}`;
+  }
+
+  function pintarVideos(caja, lista, viejo){
+    if(!lista || !lista.length){ caja.innerHTML=`<div class="rot">Videos · Ricardo</div>
+      <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#5d584e">Sin datos</div>`; return; }
+    const conDato = lista.filter(v=>typeof v.vistas_24h === 'number');
+    const mejor = conDato.length ? Math.max.apply(null, conDato.map(v=>v.vistas_24h)) : null;
+    caja.innerHTML = `<div class="rot">Videos · Ricardo</div>
+      <div class="ex-n">${mejor!==null?num(mejor):'—'}<span class="u">el mejor, a 24 h</span></div>
+      <div class="ex-pie">Los últimos ${lista.length} que salieron.</div>
+      <div style="margin-top:15px">
+      ${filas(lista.map(v=>[
+        nombreVideo(v.nombre),
+        typeof v.vistas_24h==='number' ? num(v.vistas_24h)+' vistas' : 'midiendo…'
+      ]))}</div>
+      <div class="ex-nota">«Midiendo» es a propósito: ese video todavía no cumple sus 24 horas.
+      Antes de eso <b>no hay número que dar</b>, y no se inventa.</div>
+      ${viejo ? '<div class="ex-nota mala">⚠ El robot no ha corrido; puede faltar el más reciente.</div>' : ''}`;
+  }
+
+  async function pintarMetricas(cWeb, cCat, cVid){
+    [cWeb,cCat,cVid].forEach(c=>{
+      c.innerHTML = `<div class="rot">${c.dataset.rot}</div>
+        <div class="ex-n"><span class="ex-cargando"></span></div>`;
+    });
+    try{
+      if(!cache.metricas){
+        const r = await fetch(INV_URL+'/metricas_publicas.json',{cache:'no-store'});
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        cache.metricas = await r.json();
+      }
+      const m = cache.metricas;
+      if(!m) throw new Error('el nodo está vacío');
+      const f = haceCuanto(m.actualizado||0);
+      const sello = $('#exSello');
+      if(sello){
+        sello.textContent = '· números del robot, ' + f.txt;
+        sello.style.color = f.viejo ? '#e0765f' : '#5d584e';
+      }
+      pintarSitio(cWeb, 'Página web', m.web, f.viejo);
+      pintarSitio(cCat, 'Catálogo',   m.catalogo, f.viejo);
+      pintarVideos(cVid, m.videos, f.viejo);
+    }catch(e){
+      [cWeb,cCat,cVid].forEach(c=>{
+        c.innerHTML = `<div class="rot">${c.dataset.rot}</div>
+          <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
+          <div class="ex-nota mala">No se pudo leer lo que deja el robot: ${esc(String(e.message||e))}</div>`;
+      });
+    }
+  }
+
   function faltante(rot,titulo,razon,color){
     return tarjeta({rot:rot, color:color, clase:'falta', cuerpo:
       `<div class="ex-n">${esc(titulo)}</div><div class="ex-nota">${razon}</div>`});
@@ -956,15 +1045,15 @@
     const cMaura=tarjeta({rot:'Mostrador · Maura', color:'#d8a53f', cuerpo:''});
     rej.appendChild(cRaul); rej.appendChild(cMaura);
 
+    const cWeb=tarjeta({rot:'Página web',      color:'#3b3fb8', cuerpo:''});
+    const cCat=tarjeta({rot:'Catálogo',         color:'#3f9e63', cuerpo:''});
+    const cVid=tarjeta({rot:'Videos · Ricardo', color:'#cf5a92', cuerpo:''});
+    cWeb.dataset.rot='Página web'; cCat.dataset.rot='Catálogo'; cVid.dataset.rot='Videos · Ricardo';
+    rej.appendChild(cWeb); rej.appendChild(cCat); rej.appendChild(cVid);
+
     const sep=document.createElement('div'); sep.className='ex-sec';
     sep.textContent='Falta conectar'; rej.appendChild(sep);
 
-    rej.appendChild(faltante('Página web','Falta el robot',
-      'Las visitas viven en Google Analytics, y eso pide una llave secreta que no puede estar en una página pública. Hace falta un robot en la Mac que baje el número y lo publique.','#3b3fb8'));
-    rej.appendChild(faltante('Catálogo','Falta el robot',
-      'Mismo caso que la página web, y es una propiedad distinta de Analytics.','#3f9e63'));
-    rej.appendChild(faltante('Videos · Ricardo','No se puede desde aquí',
-      'El sistema de videos vive en tu Mac. Chrome no deja que una página pública le pregunte nada a tu computadora. Sus números tienen que salir por el mismo robot.','#cf5a92'));
     rej.appendChild(faltante('Piezas y envíos','Falta permiso',
       'Dar de alta, poner precio y los envíos viven en un nodo cerrado con el correo de Raúl. Tú no tienes cuenta en ese proyecto todavía.','#e0563f'));
 
@@ -974,6 +1063,7 @@
     [].slice.call(rej.querySelectorAll('.ex-t')).forEach(function(t,i){ t.style.transitionDelay=(i*0.05)+'s'; });
 
     pintarRaul(cRaul);
+    pintarMetricas(cWeb,cCat,cVid);
     cargarSDK().then(function(){
       const a=appMaura().auth();
       a.onAuthStateChanged(function(u){ if(u) pintarMaura(cMaura); else pedirLlave(cMaura); });
