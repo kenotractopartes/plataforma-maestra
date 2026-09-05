@@ -17,7 +17,7 @@
     --sombra:0 2px 10px rgba(23,20,15,.10);
     --serif:Georgia,'Times New Roman',serif;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
-    --side:180px;
+    --side:222px;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
@@ -80,27 +80,33 @@
 
   .navwrap{flex:1;overflow-y:auto;padding:6px 0 16px}
   .grp{padding:13px 14px 5px 14px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#928873;font-weight:700}
-  nav a{
-    display:flex;align-items:center;gap:9px;
-    padding:8px 12px 8px 11px;
+  #nav a{
+    display:flex;align-items:center;gap:10px;flex-wrap:nowrap;
+    padding:9px 10px 9px 11px;
     color:#e7dfce;text-decoration:none;cursor:pointer;
     border-left:3px solid transparent;
     transition:background .12s,border-color .12s;
   }
-  nav a:hover{background:rgba(201,162,75,.08)}
-  nav a.active{background:rgba(176,58,46,.20);border-left-color:var(--vino)}
-  nav a.active .nm{color:#fff}
+  #nav a:hover{background:rgba(201,162,75,.10)}
+  #nav a.active{background:rgba(255,255,255,.07)}
+  #nav a.active .nm{color:#fff}
+  /* el color de cada sistema pinta su barrita y su marco */
+  #nav a{border-left-color:transparent}
+  #nav a.active{border-left-color:var(--c,var(--vino))}
   .ava{
-    width:30px;height:30px;border-radius:8px;flex-shrink:0;
-    display:grid;place-items:center;font-size:15px;
+    width:32px;height:32px;border-radius:9px;flex-shrink:0;
+    display:grid;place-items:center;font-size:16px;
     background:linear-gradient(160deg,#2a241b,#3a3227);
-    border:1px solid rgba(201,162,75,.3);
+    border:1px solid var(--c,rgba(201,162,75,.3));
   }
-  .meta{flex:1;min-width:0}
-  .nm{font-family:var(--serif);font-size:14px;line-height:1.05;color:#f4efe4}
-  .rl{font-size:10px;color:#b3a891;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{flex:1;min-width:0;overflow:hidden}
+  /* los DOS renglones se recortan con puntitos: nunca se salen de la barra */
+  .nm{font-family:var(--serif);font-size:14.5px;line-height:1.15;color:#f4efe4;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rl{font-size:10.5px;color:#b3a891;margin-top:2px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .sdot.vivo{background:var(--verde);box-shadow:0 0 6px rgba(46,125,70,.8)}
+  .sdot.vivo{background:var(--c,var(--verde));box-shadow:0 0 6px currentColor}
   .sdot.construccion{background:var(--oro)}
 
   .sidefoot{padding:11px 12px;border-top:1px solid rgba(201,162,75,.18);display:flex;gap:6px}
@@ -150,7 +156,9 @@
     cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;position:relative;overflow:hidden;
   }
   .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(23,20,15,.13);border-color:var(--oro)}
-  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--vino)}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c,var(--vino))}
+  .card:hover{border-color:var(--c,var(--oro))}
+  .card .go{color:var(--c,var(--vino))}
   .card .row1{display:flex;align-items:center;gap:12px;margin-bottom:12px}
   .card .cav{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;font-size:23px;background:#efe9dd;border:1px solid var(--linea)}
   .card h4{font-family:var(--serif);font-size:19px;margin:0;line-height:1.1}
@@ -190,7 +198,7 @@
   .mtile .mhead small{font-size:11px;color:#8a8069}
   .mtile .mhead .expand{font-size:12px;color:var(--vino);font-weight:600;white-space:nowrap}
   .mframe{position:relative;height:230px;background:#fff}
-  .mframe iframe{width:100%;height:100%;border:0;transform:scale(.9);transform-origin:0 0;width:111%;height:111%}
+  .mframe iframe{border:0;transform:scale(.9);transform-origin:0 0;width:111%;height:111%}
   .mframe .mph{position:absolute;inset:0;display:grid;place-items:center;color:#a99;font-size:13px;background:repeating-linear-gradient(45deg,#f4efe6,#f4efe6 12px,#efe9dd 12px,#efe9dd 24px)}
 
   /* config modal */
@@ -208,6 +216,52 @@
   .cfg-item label{font-size:11px;color:#8a8069;display:block;margin-bottom:3px}
   .cfg-item input{width:100%;padding:8px 10px;border:1px solid var(--linea);border-radius:7px;font-size:13px;font-family:var(--sans)}
   .cfg-item input:focus{outline:none;border-color:var(--oro)}
+  /* ---- reordenar y color en el modal ---- */
+  .cfg-item{position:relative}
+  .cfg-item .r{align-items:flex-start}
+  .cfg-top{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .cfg-top .em{font-size:19px}
+  .cfg-top .nombre{flex:1;min-width:0}
+  .cfg-top .nombre b{font-family:var(--serif);font-size:15px}
+  .cfg-top .nombre span{color:#8a8069;font-size:12px;display:block}
+  .ord{display:flex;flex-direction:column;gap:2px}
+  .ord button{
+    width:26px;height:19px;line-height:1;padding:0;
+    border:1px solid var(--linea);background:#fff;border-radius:6px;
+    cursor:pointer;font-size:11px;color:#6f6656;
+  }
+  .ord button:hover:not(:disabled){background:var(--beige);border-color:var(--oro)}
+  .ord button:disabled{opacity:.28;cursor:default}
+  .cfg-color{display:flex;align-items:center;gap:8px;margin-top:9px}
+  .cfg-color input[type=color]{
+    width:44px;height:30px;padding:2px;border:1px solid var(--linea);
+    border-radius:7px;background:#fff;cursor:pointer;flex-shrink:0;
+  }
+  .cfg-color .lbl{font-size:11px;color:#8a8069}
+  .cfg-warn{
+    margin-top:8px;font-size:11.5px;color:#b03a2e;background:rgba(176,58,46,.08);
+    border-radius:7px;padding:6px 9px;display:none;
+  }
+  .cfg-warn.show{display:block}
+
+  /* ---- interruptor: abrir en pestaña vs. verlo aquí ---- */
+  .modo{
+    padding:9px 12px;border-top:1px solid rgba(201,162,75,.18);
+    display:flex;align-items:center;gap:8px;cursor:pointer;
+    font-size:11px;color:#c8bfae;user-select:none;
+  }
+  .modo:hover{background:rgba(201,162,75,.07)}
+  .modo .sw{
+    width:32px;height:18px;border-radius:20px;flex-shrink:0;position:relative;
+    background:rgba(201,162,75,.28);transition:background .15s;
+  }
+  .modo .sw::after{
+    content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;
+    border-radius:50%;background:#f2efe9;transition:transform .15s;
+  }
+  .modo.on .sw{background:var(--verde)}
+  .modo.on .sw::after{transform:translateX(14px)}
+
   .sheet footer{padding:16px 22px;border-top:1px solid var(--linea);display:flex;gap:10px;justify-content:space-between;align-items:center}
   .hint{font-size:11.5px;color:#8a8069}
 
@@ -276,6 +330,10 @@
       <span>Sesión de <b>Eugenio</b> · Dirección</span>
     </div>
     <div class="navwrap" id="nav"></div>
+    <div class="modo" id="modoBtn" title="Cómo se abre cuando le picas a un sistema">
+      <span class="sw"></span>
+      <span id="modoTxt">Abrir en pestaña</span>
+    </div>
     <div class="sidefoot">
       <button id="btnMosaic">▦ Ver todo</button>
       <button id="btnCfg">⚙ Editar</button>
@@ -332,115 +390,155 @@
 (function(){
   "use strict";
 
+  /* ─────────────────────────────────────────────────────────────
+     LOS SISTEMAS. Para agregar uno nuevo, copia un renglón entero.
+     'color' es el color de esa tarjeta (se puede cambiar desde ⚙).
+     ───────────────────────────────────────────────────────────── */
   const DEFAULTS = [
-    { id:'inventario', persona:'Raúl',          rol:'Jefe de Inventario',        sistema:'Inventario de Patio',      area:'Patio',           emoji:'🏗️', estado:'vivo',
-      url:'https://kenotractopartes.github.io/Inventario/',   desc:'Inventario del patio en vivo: piezas, familias, ubicaciones y salidas.' },
-    { id:'maura',      persona:'Maura',         rol:'Mostrador · Administración', sistema:'Registro de Mostrador',    area:'Administración',  emoji:'📒', estado:'vivo',
+    { id:'inventario', persona:'Raúl',           rol:'Jefe de Inventario',         sistema:'Inventario de Patio',    area:'Patio',          emoji:'🏗️', estado:'vivo', color:'#b03a2e',
+      url:'https://fotonas.tractopartes.com/',                desc:'Inventario del patio en vivo: piezas, familias, ubicaciones y salidas.' },
+    { id:'maura',      persona:'Maura',          rol:'Mostrador · Administración', sistema:'Registro de Mostrador',  area:'Administración', emoji:'📒', estado:'vivo', color:'#c9a24b',
       url:'https://maura-tracto.netlify.app/',                desc:'Registro diario: ventas, notas, abonos, egresos y estatus de chasis.' },
-    { id:'sat',        persona:'Ventas',        rol:'Mostrador de ventas',        sistema:'Buscador SAT',             area:'Ventas',          emoji:'🏷️', estado:'vivo',
+    { id:'sat',        persona:'Ventas',         rol:'Mostrador de ventas',        sistema:'Buscador SAT',           area:'Ventas',         emoji:'🏷️', estado:'vivo', color:'#2e7d46',
       url:'https://kenotractopartes.github.io/buscador-sat/', desc:'Clave SAT por nombre de pieza. 1,908 piezas, sin claves faltantes.' },
-    { id:'arneses',    persona:'Taller',        rol:'Ventas · Taller',            sistema:'Buscador de Arneses',      area:'Ventas',          emoji:'🔌', estado:'vivo',
+    { id:'arneses',    persona:'Taller',         rol:'Ventas · Taller',            sistema:'Buscador de Arneses',    area:'Ventas',         emoji:'🔌', estado:'vivo', color:'#2f6f8f',
       url:'https://kenotractopartes.github.io/arneses/',      desc:'Buscador de arneses del taller, sincronizado en vivo.' },
-    { id:'iva',        persona:'Administración',rol:'Fiscal',                     sistema:'Calculadora Fiscal IVA',   area:'Administración',  emoji:'🧮', estado:'vivo',
+    { id:'iva',        persona:'Administración', rol:'Fiscal',                     sistema:'Calculadora Fiscal IVA', area:'Administración', emoji:'🧮', estado:'vivo', color:'#7b4b9e',
       url:'https://tata-tracto.netlify.app/',                 desc:'Cálculo rápido de IVA y desglose fiscal.' },
-    { id:'papa',       persona:'Papá',          rol:'Dueño · Dirección',          sistema:'Panel del Dueño',          area:'Dirección',       emoji:'👑', estado:'vivo',
+    { id:'papa',       persona:'Papá',           rol:'Dueño · Dirección',          sistema:'Panel del Dueño',        area:'Dirección',      emoji:'👑', estado:'vivo', color:'#8a6d1e',
       url:'https://ai-maura-06-26.web.app/',                  desc:'Panel resumen del negocio para el dueño.' },
-    { id:'blanca',     persona:'Blanca',        rol:'Bancos · Facturas',          sistema:'Dashboard IA de Blanca',   area:'Administración',  emoji:'🤖', estado:'construccion',
+    { id:'blanca',     persona:'Blanca',         rol:'Bancos · Facturas',          sistema:'Dashboard IA de Blanca', area:'Administración', emoji:'🤖', estado:'construccion', color:'#4a7c8c',
       url:'',                                                 desc:'Clasificación de correos y saldo en vivo. En construcción — pega su URL cuando esté lista.' }
   ];
 
-  const AREAS = ['Dirección','Administración','Patio','Ventas'];
-  const LS_KEY = 'tpm_unificador_v1';
+  /* Direcciones que YA SABEMOS que están rotas y con qué se reemplazan.
+     kenotractopartes.github.io/Inventario/ rebota a http:// (sin la "s") y
+     Chrome lo bloquea sin avisar: por eso salía la pantalla en blanco. */
+  const REEMPLAZOS = {
+    'https://kenotractopartes.github.io/inventario/': 'https://fotonas.tractopartes.com/',
+    'http://fotonas.tractopartes.com/':               'https://fotonas.tractopartes.com/'
+  };
 
-  // ---- state ----
+  const LS_KEY = 'tpm_unificador_v1';
+  const LS_MODO = 'tpm_unificador_modo_v1';
+
+  // ---- estado ----
   let systems = load();
-  const loaded = {};        // id -> true once iframe created
-  let current = null;       // active system id or null (overview)
+  let current = null;      // id del sistema abierto, o null (inicio)
   let mosaicOn = false;
+  // Cómo se abre al picarle. true = pestaña nueva (lo que pidió Keno).
+  let enPestana = (function(){ try{ return localStorage.getItem(LS_MODO) !== 'aqui'; }catch(e){ return true; } })();
 
   function load(){
-    try{
-      const saved = JSON.parse(localStorage.getItem(LS_KEY)||'null');
-      if(saved && Array.isArray(saved.systems)){
-        // merge saved urls/estado onto defaults by id, keep any extra
-        return DEFAULTS.map(d=>{
-          const s = saved.systems.find(x=>x.id===d.id);
-          return s ? Object.assign({},d,{url:s.url,estado:s.estado||d.estado}) : d;
-        });
-      }
-    }catch(e){}
-    return DEFAULTS.map(d=>Object.assign({},d));
+    let guardado = null;
+    try{ guardado = JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){}
+    const previos = (guardado && Array.isArray(guardado.systems)) ? guardado.systems : [];
+
+    const lista = DEFAULTS.map(d=>{
+      const g = previos.find(x=>x.id===d.id) || {};
+      let url = (g.url !== undefined && g.url !== null) ? g.url : d.url;
+      // si la guardada es una de las rotas conocidas, se corrige sola
+      const fix = REEMPLAZOS[String(url).trim().toLowerCase()];
+      if(fix) url = fix;
+      return Object.assign({}, d, {
+        url:    url,
+        estado: g.estado || (url ? 'vivo' : d.estado),
+        color:  g.color  || d.color,
+        orden:  (typeof g.orden === 'number') ? g.orden : DEFAULTS.indexOf(d)
+      });
+    });
+    return ordenar(lista);
   }
+  function ordenar(l){ return l.slice().sort((a,b)=>a.orden-b.orden).map((s,i)=>{ s.orden=i; return s; }); }
   function save(){
-    localStorage.setItem(LS_KEY, JSON.stringify({systems:systems.map(s=>({id:s.id,url:s.url,estado:s.estado}))}));
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify({ systems: systems.map(s=>(
+        {id:s.id, url:s.url, estado:s.estado, color:s.color, orden:s.orden})) }));
+    }catch(e){}
   }
 
   const $ = s=>document.querySelector(s);
   const stage = $('#stage');
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
-  // ---- build sidebar nav ----
+  /* Le pega un número distinto a la dirección para que el navegador
+     NO reuse la copia vieja. Así siempre sale la versión de hoy. */
+  function fresca(url){
+    if(!url) return '';
+    const sep = url.indexOf('?') === -1 ? '?' : '&';
+    return url + sep + '_v=' + Date.now();
+  }
+  const esInsegura = u => /^http:\/\//i.test(String(u||'').trim());
+
+  // ══════════════ barra izquierda ══════════════
   function renderNav(){
     const nav = $('#nav'); nav.innerHTML='';
-    AREAS.forEach(area=>{
-      const items = systems.filter(s=>s.area===area);
-      if(!items.length) return;
-      const g = document.createElement('div'); g.className='grp'; g.textContent=area; nav.appendChild(g);
-      items.forEach(s=>{
-        const a = document.createElement('a');
-        a.dataset.id=s.id;
-        a.innerHTML =
-          `<div class="ava">${s.emoji}</div>
-           <div class="meta"><div class="nm">${esc(s.persona)}</div><div class="rl">${esc(s.sistema)}</div></div>
-           <div class="sdot ${s.estado}" title="${s.estado==='vivo'?'En vivo':'En construcción'}"></div>`;
-        a.addEventListener('click',()=>openSystem(s.id));
-        nav.appendChild(a);
-      });
+    systems.forEach(s=>{
+      const a = document.createElement('a');
+      a.dataset.id = s.id;
+      a.style.setProperty('--c', s.color);
+      a.title = s.persona + ' · ' + s.sistema;
+      a.innerHTML =
+        `<div class="ava">${s.emoji}</div>
+         <div class="meta"><div class="nm">${esc(s.persona)}</div><div class="rl">${esc(s.sistema)}</div></div>
+         <div class="sdot ${s.estado}" style="color:${esc(s.color)}" title="${s.estado==='vivo'?'En vivo':'En construcción'}"></div>`;
+      a.addEventListener('click',()=>abrir(s.id));
+      nav.appendChild(a);
     });
   }
 
-  // ---- build overview cards ----
+  // ══════════════ tarjetas de inicio ══════════════
   function renderCards(){
     const c = $('#cards'); c.innerHTML='';
     systems.forEach(s=>{
       const card = document.createElement('div');
       card.className='card';
+      card.style.setProperty('--c', s.color);
       card.innerHTML =
-        `<div class="row1"><div class="cav">${s.emoji}</div>
+        `<div class="row1"><div class="cav" style="background:${esc(s.color)}1f;border-color:${esc(s.color)}55">${s.emoji}</div>
            <div><h4>${esc(s.persona)}</h4><div class="crole">${esc(s.rol)}</div></div></div>
          <div class="cdesc">${esc(s.desc)}</div>
          <div class="cfoot">
            <span class="chip ${s.estado}">${s.estado==='vivo'?'● En vivo':'◐ En construcción'}</span>
-           <span class="go">Abrir ${s.persona.split(' ')[0]} →</span>
+           <span class="go">Abrir ${esc(s.persona.split(' ')[0])} →</span>
          </div>`;
-      card.addEventListener('click',()=>openSystem(s.id));
+      card.addEventListener('click',()=>abrir(s.id));
       c.appendChild(card);
     });
   }
 
-  // ---- open a single system in iframe ----
+  /* ══════════════ picarle a un sistema ══════════════
+     Con el interruptor en "Abrir en pestaña" (lo normal), se va derechito
+     al HTML real. Con "Verlo aquí", se muestra embebido como antes. */
+  function abrir(id){
+    const s = systems.find(x=>x.id===id); if(!s) return;
+    if(enPestana && s.estado==='vivo' && s.url){
+      window.open(fresca(s.url), '_blank', 'noopener');
+      return;
+    }
+    openSystem(id);
+  }
+
   function openSystem(id){
     const s = systems.find(x=>x.id===id); if(!s) return;
     mosaicOn=false; current=id;
     closeSidebarMobile();
 
-    // topbar
     $('#tbTitle').innerHTML =
       `<span class="em">${s.emoji}</span>
        <div class="txt"><h2>${esc(s.sistema)}</h2><small>Atendido por ${esc(s.persona)} · ${esc(s.rol)}</small></div>`;
     renderActions(s);
 
-    // nav highlight
-    document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.id===id));
+    document.querySelectorAll('#nav a').forEach(a=>{
+      const on = a.dataset.id===id;
+      a.classList.toggle('active', on);
+    });
 
-    // hide overview + mosaic + other viewers
     $('#overview').style.display='none';
-    $('#mosaicView') && $('#mosaicView').classList.remove('show');
+    if($('#mosaicView')) $('#mosaicView').classList.remove('show');
     document.querySelectorAll('.viewer').forEach(v=>v.classList.remove('show'));
 
-    if(s.estado==='construccion' || !s.url){
-      showBlocked(s, true);
-      return;
-    }
+    if(s.estado==='construccion' || !s.url){ showBlocked(s); return; }
     mountViewer(s);
   }
 
@@ -448,16 +546,20 @@
     let v = document.getElementById('view-'+s.id);
     if(!v){
       v = document.createElement('div'); v.className='viewer'; v.id='view-'+s.id;
+      const aviso = esInsegura(s.url)
+        ? `<p style="color:#b03a2e"><b>Esta dirección empieza con http:// y no con https://</b><br>Un sitio seguro no puede mostrar adentro uno inseguro; por eso sale en blanco. Corrígela en ⚙ Editar.</p>`
+        : `<p>Este sistema puede tardar o no permitir verse embebido. Ábrelo en una pestaña completa.</p>`;
       v.innerHTML =
         `<div class="loading"><div style="text-align:center"><div class="spin" style="margin:0 auto"></div><div class="loadtxt">Cargando ${esc(s.sistema)}…</div></div></div>
-         <div class="blocked"><div class="bx"><h3>No se pudo mostrar aquí</h3><p>Este sistema puede tardar o no permitir verse embebido. Ábrelo en una pestaña completa.</p><a class="btn pri" href="${esc(s.url)}" target="_blank" rel="noopener">Abrir ${esc(s.persona)} en pestaña ↗</a></div></div>
-         <iframe title="${esc(s.sistema)}" src="${esc(s.url)}" loading="lazy"></iframe>`;
+         <div class="blocked ${esInsegura(s.url)?'show':''}"><div class="bx"><h3>No se pudo mostrar aquí</h3>${aviso}<a class="btn pri" href="${esc(s.url)}" target="_blank" rel="noopener">Abrir ${esc(s.persona)} en pestaña ↗</a></div></div>
+         ${esInsegura(s.url) ? '' : `<iframe title="${esc(s.sistema)}" src="${esc(fresca(s.url))}"></iframe>`}`;
       stage.appendChild(v);
       const iframe = v.querySelector('iframe');
       const load = v.querySelector('.loading');
-      iframe.addEventListener('load',()=>load.classList.add('hide'));
-      // safety: hide spinner after 6s regardless
-      setTimeout(()=>load.classList.add('hide'),6000);
+      if(iframe){
+        iframe.addEventListener('load',()=>load.classList.add('hide'));
+        setTimeout(()=>load.classList.add('hide'),6000);
+      } else { load.classList.add('hide'); }
     }
     v.classList.add('show');
   }
@@ -487,25 +589,33 @@
       `<button class="btn" id="aReload" ${canLive?'':'disabled style=opacity:.4'}>⟳ <span class="lbl">Recargar</span></button>
        <button class="btn" id="aFull" ${canLive?'':'disabled style=opacity:.4'}>⛶ <span class="lbl">Pantalla completa</span></button>
        ${canLive?`<a class="btn pri" href="${esc(s.url)}" target="_blank" rel="noopener">↗ <span class="lbl">Abrir en pestaña</span></a>`:''}`;
-    const rl = $('#aReload'); if(rl && canLive) rl.onclick=()=>{
-      const f=document.querySelector('#view-'+s.id+' iframe'); const l=document.querySelector('#view-'+s.id+' .loading');
-      if(f){ if(l)l.classList.remove('hide'); f.src=f.src; setTimeout(()=>l&&l.classList.add('hide'),6000);} };
-    const fu = $('#aFull'); if(fu && canLive) fu.onclick=()=>{
-      const f=document.querySelector('#view-'+s.id+' iframe'); if(f&&f.requestFullscreen)f.requestFullscreen(); };
+    const rl = $('#aReload');
+    if(rl && canLive) rl.onclick = ()=>{
+      const f = document.querySelector('#view-'+s.id+' iframe');
+      const l = document.querySelector('#view-'+s.id+' .loading');
+      if(f){ if(l) l.classList.remove('hide');
+             f.src = fresca(s.url);            // número nuevo = copia nueva, nunca la de ayer
+             setTimeout(()=>l&&l.classList.add('hide'),6000); }
+    };
+    const fu = $('#aFull');
+    if(fu && canLive) fu.onclick = ()=>{
+      const f=document.querySelector('#view-'+s.id+' iframe');
+      if(f && f.requestFullscreen) f.requestFullscreen();
+    };
   }
 
-  // ---- home ----
+  // ══════════════ inicio ══════════════
   function goHome(){
     current=null; mosaicOn=false;
     $('#overview').style.display='';
     document.querySelectorAll('.viewer').forEach(v=>v.classList.remove('show'));
-    $('#mosaicView') && $('#mosaicView').classList.remove('show');
+    if($('#mosaicView')) $('#mosaicView').classList.remove('show');
     document.querySelectorAll('#nav a').forEach(a=>a.classList.remove('active'));
     $('#tbTitle').innerHTML='<span class="em">🏠</span><div class="txt"><h2>Inicio</h2><small>Elige un sistema para verlo en vivo</small></div>';
     renderActions(null);
   }
 
-  // ---- mosaic (all live at once) ----
+  // ══════════════ mosaico ══════════════
   function toggleMosaic(){
     mosaicOn = !mosaicOn;
     if(!mosaicOn){ goHome(); return; }
@@ -516,69 +626,119 @@
     $('#tbTitle').innerHTML='<span class="em">▦</span><div class="txt"><h2>Mosaico</h2><small>Todos los sistemas en vivo</small></div>';
     renderActions(null);
 
-    let mv = $('#mosaicView');
-    if(!mv){
-      mv=document.createElement('div'); mv.className='mosaic'; mv.id='mosaicView';
-      const grid=document.createElement('div'); grid.className='mgrid';
-      systems.forEach(s=>{
-        const t=document.createElement('div'); t.className='mtile';
-        const live = s.estado==='vivo' && s.url;
-        t.innerHTML =
-          `<div class="mhead"><span class="em">${s.emoji}</span>
-             <div class="mt"><h5>${esc(s.persona)}</h5><small>${esc(s.sistema)}</small></div>
-             <span class="expand">Ampliar →</span></div>
-           <div class="mframe">${ live
-              ? `<iframe title="${esc(s.sistema)}" src="${esc(s.url)}" loading="lazy" scrolling="no"></iframe>`
-              : `<div class="mph">🚧 En construcción</div>` }</div>`;
-        t.querySelector('.mhead').addEventListener('click',()=>openSystem(s.id));
-        grid.appendChild(t);
-      });
-      mv.appendChild(grid); stage.appendChild(mv);
-    }
+    if($('#mosaicView')) $('#mosaicView').remove();   // siempre se rearma: así sale al día
+    const mv=document.createElement('div'); mv.className='mosaic'; mv.id='mosaicView';
+    const grid=document.createElement('div'); grid.className='mgrid';
+    systems.forEach(s=>{
+      const t=document.createElement('div'); t.className='mtile';
+      t.style.borderTop = '3px solid ' + s.color;
+      const live = s.estado==='vivo' && s.url && !esInsegura(s.url);
+      t.innerHTML =
+        `<div class="mhead"><span class="em">${s.emoji}</span>
+           <div class="mt"><h5>${esc(s.persona)}</h5><small>${esc(s.sistema)}</small></div>
+           <span class="expand" style="color:${esc(s.color)}">Ampliar →</span></div>
+         <div class="mframe">${ live
+            ? `<iframe title="${esc(s.sistema)}" src="${esc(fresca(s.url))}" scrolling="no"></iframe>`
+            : `<div class="mph">${esInsegura(s.url)?'⚠ Dirección http:// — no se puede mostrar':'🚧 En construcción'}</div>` }</div>`;
+      t.querySelector('.mhead').addEventListener('click',()=>openSystem(s.id));
+      grid.appendChild(t);
+    });
+    mv.appendChild(grid); stage.appendChild(mv);
     mv.classList.add('show');
   }
 
-  // ---- config modal ----
+  // ══════════════ ⚙ Editar: direcciones, ORDEN y COLOR ══════════════
   function openCfg(){
     const body=$('#cfgBody'); body.innerHTML='';
-    systems.forEach(s=>{
-      const it=document.createElement('div'); it.className='cfg-item';
+    systems.forEach((s,i)=>{
+      const it=document.createElement('div'); it.className='cfg-item'; it.dataset.id=s.id;
       it.innerHTML =
-        `<div class="r"><span class="em">${s.emoji}</span><b>${esc(s.persona)}</b> <span style="color:#8a8069;font-size:12px">· ${esc(s.sistema)}</span></div>
+        `<div class="cfg-top">
+           <div class="ord">
+             <button data-sube title="Subir"   ${i===0?'disabled':''}>▲</button>
+             <button data-baja title="Bajar"   ${i===systems.length-1?'disabled':''}>▼</button>
+           </div>
+           <span class="em">${s.emoji}</span>
+           <div class="nombre"><b>${esc(s.persona)}</b><span>${esc(s.sistema)}</span></div>
+         </div>
          <label>Dirección en vivo (URL)</label>
-         <input type="url" data-id="${s.id}" value="${esc(s.url)}" placeholder="https://…" />`;
+         <input type="url" data-id="${esc(s.id)}" value="${esc(s.url)}" placeholder="https://…" />
+         <div class="cfg-warn ${esInsegura(s.url)?'show':''}">⚠ Empieza con <b>http://</b>. Ponle la <b>s</b> o saldrá en blanco.</div>
+         <div class="cfg-color">
+           <input type="color" data-color="${esc(s.id)}" value="${esc(s.color)}" />
+           <span class="lbl">Color de ${esc(s.persona)}</span>
+         </div>`;
+      it.querySelector('[data-sube]').addEventListener('click',()=>mover(s.id,-1));
+      it.querySelector('[data-baja]').addEventListener('click',()=>mover(s.id, 1));
+      it.querySelector('input[type=url]').addEventListener('input',function(){
+        it.querySelector('.cfg-warn').classList.toggle('show', esInsegura(this.value));
+      });
       body.appendChild(it);
     });
     $('#modal').classList.add('show');
   }
-  function saveCfg(){
-    $('#cfgBody').querySelectorAll('input[data-id]').forEach(inp=>{
+
+  /* Sube o baja un sistema. Guarda lo escrito ANTES de redibujar,
+     para que no se pierda lo que ya venía tecleado. */
+  function mover(id, paso){
+    leerCampos();
+    const i = systems.findIndex(x=>x.id===id);
+    const j = i + paso;
+    if(i<0 || j<0 || j>=systems.length) return;
+    const t = systems[i]; systems[i]=systems[j]; systems[j]=t;
+    systems.forEach((s,k)=>s.orden=k);
+    save(); renderNav(); renderCards(); openCfg();
+  }
+
+  function leerCampos(){
+    const body = $('#cfgBody'); if(!body) return;
+    body.querySelectorAll('input[data-id]').forEach(inp=>{
       const s=systems.find(x=>x.id===inp.dataset.id);
       if(s){ s.url=inp.value.trim(); s.estado = s.url ? 'vivo' : 'construccion'; }
     });
+    body.querySelectorAll('input[data-color]').forEach(inp=>{
+      const s=systems.find(x=>x.id===inp.dataset.color);
+      if(s) s.color = inp.value;
+    });
+  }
+
+  function saveCfg(){
+    leerCampos();
     save();
-    // reset iframes so new URLs take effect
     document.querySelectorAll('.viewer').forEach(v=>v.remove());
-    $('#mosaicView') && $('#mosaicView').remove();
+    if($('#mosaicView')) $('#mosaicView').remove();
     renderNav(); renderCards();
     $('#modal').classList.remove('show');
-    if(mosaicOn){ mosaicOn=false; toggleMosaic(); } else if(current){ openSystem(current); } else goHome();
+    if(mosaicOn){ mosaicOn=false; toggleMosaic(); }
+    else if(current){ openSystem(current); }
+    else goHome();
   }
+
   function resetCfg(){
-    if(!confirm('¿Restaurar las direcciones originales de todos los sistemas?')) return;
-    systems = DEFAULTS.map(d=>Object.assign({},d));
-    save(); document.querySelectorAll('.viewer').forEach(v=>v.remove());
-    $('#mosaicView') && $('#mosaicView').remove();
-    renderNav(); renderCards(); $('#modal').classList.remove('show'); goHome();
+    if(!confirm('¿Restaurar direcciones, orden y colores originales de todos los sistemas?')) return;
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    systems = load();
+    document.querySelectorAll('.viewer').forEach(v=>v.remove());
+    if($('#mosaicView')) $('#mosaicView').remove();
+    renderNav(); renderCards();
+    $('#modal').classList.remove('show'); goHome();
   }
 
-  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-
-  // ---- mobile sidebar ----
+  // ══════════════ barra en celular ══════════════
   function openSidebarMobile(){ $('#side').classList.add('open'); $('#backdrop').classList.add('show'); }
   function closeSidebarMobile(){ $('#side').classList.remove('open'); $('#backdrop').classList.remove('show'); }
 
-  // ---- wire up ----
+  // ══════════════ interruptor pestaña / aquí ══════════════
+  function pintarModo(){
+    const b=$('#modoBtn');
+    b.classList.toggle('on', enPestana);
+    $('#modoTxt').textContent = enPestana ? 'Abrir en pestaña' : 'Verlo aquí adentro';
+    b.title = enPestana
+      ? 'Al picarle a un sistema se abre el HTML real en una pestaña nueva'
+      : 'Al picarle a un sistema se muestra embebido aquí dentro';
+  }
+
+  // ══════════════ conexiones ══════════════
   $('#hamb').addEventListener('click',openSidebarMobile);
   $('#backdrop').addEventListener('click',closeSidebarMobile);
   $('#btnMosaic').addEventListener('click',()=>{ $('#btnMosaic').classList.toggle('on'); toggleMosaic(); });
@@ -588,20 +748,30 @@
   $('#cfgReset').addEventListener('click',resetCfg);
   $('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') $('#modal').classList.remove('show'); });
   $('#tbTitle').addEventListener('click',()=>{ if(current||mosaicOn){ $('#btnMosaic').classList.remove('on'); goHome(); }});
-
-  // keyboard: 1-9 to open by order, Esc home
-  document.addEventListener('keydown',e=>{
-    if(e.target.tagName==='INPUT') return;
-    if(e.key==='Escape'){ $('#btnMosaic').classList.remove('on'); goHome(); }
-    const n=parseInt(e.key,10);
-    if(n>=1 && n<=systems.length){ openSystem(systems[n-1].id); }
+  $('#modoBtn').addEventListener('click',()=>{
+    enPestana = !enPestana;
+    try{ localStorage.setItem(LS_MODO, enPestana?'pestana':'aqui'); }catch(e){}
+    pintarModo();
   });
 
-  // offline banner
+  // teclado: 1-9 abre por orden, Esc regresa a inicio
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
+    if($('#modal').classList.contains('show')){            // con el modal abierto no estorba
+      if(e.key==='Escape') $('#modal').classList.remove('show');
+      return;
+    }
+    if(e.key==='Escape'){ $('#btnMosaic').classList.remove('on'); goHome(); return; }
+    const n=parseInt(e.key,10);
+    if(n>=1 && n<=systems.length) abrir(systems[n-1].id);
+  });
+
+  // aviso de sin internet
   function netStatus(){ $('#offline').classList.toggle('show',!navigator.onLine); }
   window.addEventListener('online',netStatus); window.addEventListener('offline',netStatus);
 
-  renderNav(); renderCards(); netStatus();
+  save();                       // deja asentada la corrección de la dirección de Raúl
+  renderNav(); renderCards(); pintarModo(); netStatus();
 })();
 </script>
 </body>
