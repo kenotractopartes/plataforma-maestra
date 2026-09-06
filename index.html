@@ -421,7 +421,6 @@
 </div>
 
 <div class="tools">
-  <button id="bExtras" title="Extras — los números">▦</button>
   <button id="bAjustes" title="Ajustes">⚙</button>
 </div>
 
@@ -474,6 +473,9 @@
       url:'https://localhost:8750/', alt:'https://192.168.1.7:8750/', casa:true,
       emoji:'🎬', linea:'El estudio',
       texto:'Arma los reels y las fotos de producto. Vive en tu Mac, no en internet.' },
+    { id:'extras',     quien:'Extras',         quees:'Los números',           color:'#c9a24b', foto:'img/f2.jpg',
+      panel:true,         // no abre una liga: abre la capa de números
+      url:'', emoji:'▦', linea:'Cómo va la empresa' },
     { id:'web',        quien:'Página web',     quees:'tractopartes.com',      color:'#3b3fb8', foto:'img/web.jpg',
       desliza:true,       // su fondo NO hace zoom: escurre para abajo, como si la estuvieras leyendo
       url:'https://tractopartes.com/',                        emoji:'🌐', linea:'Lo que ve el cliente' },
@@ -491,6 +493,7 @@
   };
 
   const LS='tpm_unificador_v1', CLAVE='maestro2026', LSOK='tpm_maestro_ok_v1';
+  const DEFV = 2;                     // sube este número al cambiar qué se esconde por omisión
   const LSULT='tpm_ultimo_v1';        // el último que abrió
   const LSPISTA='tpm_pista_vista_v1'; // si ya vio la pista del teclado
   const $=q=>document.querySelector(q);
@@ -510,12 +513,17 @@
   function cargar(){
     let g=null; try{ g=JSON.parse(localStorage.getItem(LS)||'null'); }catch(e){}
     const prev=(g&&Array.isArray(g.systems))?g.systems:[];
+    /* Si lo guardado es de una versión anterior, el 'oculto' guardado se
+       ignora una vez y manda el valor nuevo. Sin esto, un 'false' viejo
+       le gana para siempre a lo que yo cambie después — que fue justo lo
+       que dejó a Blanca visible aunque ya la habíamos escondido. */
+    const viejo = !g || (g.defv||0) < DEFV;
     return BASE.map(b=>{
       const p=prev.find(x=>x.id===b.id)||{};
       let url=(p.url!==undefined&&p.url!==null)?p.url:b.url;
       const fix=ARREGLOS[String(url).trim().toLowerCase()]; if(fix) url=fix;
       return Object.assign({},b,{url:url,alt:(p.alt!==undefined?p.alt:b.alt),color:p.color||b.color,
-        oculto:(typeof p.oculto==='boolean')?p.oculto:!!b.oculto,
+        oculto: viejo ? !!b.oculto : ((typeof p.oculto==='boolean')?p.oculto:!!b.oculto),
         orden:(typeof p.orden==='number')?p.orden:BASE.indexOf(b)});
     }).sort((a,b)=>a.orden-b.orden).map((s,i)=>{s.orden=i;return s;});
   }
@@ -563,13 +571,14 @@
   function pintarPlaca(){
     const s=sist[sel], p=$('#placa');
     p.classList.remove('entra');
-    const listo = !!(s.url || s.alt);
+    const listo = !!(s.url || s.alt) || !!s.panel;
     // si vive en la Mac, decir desde dónde se está alcanzando
     // Keno: nada de textos que le expliquen lo que ya sabe. Solo el nombre y el botón.
     p.innerHTML=`<div class="arriba">${esc(s.linea)}</div>
       <h1>${esc(s.quien)}</h1>
       <div class="linea"></div>
-      <button class="entrar${listo?'':' pendiente'}">${listo?'Entrar &nbsp;→':'En construcción'}</button>`;
+      <button class="entrar${listo?'':' pendiente'}">${
+        s.panel ? 'Ver los números &nbsp;→' : listo ? 'Entrar &nbsp;→' : 'En construcción'}</button>`;
     if(listo) p.querySelector('.entrar').addEventListener('click',entrar);
     requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add('entra')));
   }
@@ -582,6 +591,7 @@
   }
   function entrar(){
     const s=sist[sel];
+    if(s.panel){ abrirExtras(); return; }   // Extras no abre una liga: abre su capa
     const d = s.viva || s.url;          // la que contestó; si no, la de siempre
     if(!d) return;
     try{ localStorage.setItem(LSULT,s.id); }catch(e){}   // para dejarlo listo la próxima
@@ -613,6 +623,7 @@
      intenta la IP del negocio, para que sirva desde el mostrador o el
      celular estando en el mismo WiFi. */
   async function revisarUno(s){
+    if(s.panel) return 'encasa';                 // no es un sitio: no hay a qué tocarle la puerta
     if(!s.url && !s.alt) return 'sin-url';
     /* 🔴 COMPROBADO EN EL SITIO PUBLICADO: un sitio público NO puede
        hacerle fetch a localhost — Chrome lo corta por «Private Network
@@ -778,7 +789,7 @@
     return t;
   }
   function filas(lista){
-    return lista.map(f=>`<div class="ex-fila"><span class="et">${esc(f[0])}</span><span class="va">${esc(f[1])}</span></div>`).join('');
+    return lista.map(f=>`<div class="ex-fila"><span class="et">${esc(f[0])}</span><span class="va">${f[1]}</span></div>`).join('');
   }
 
   // ── RAÚL: sale del catálogo público, sin sesión ni nada ──
@@ -804,8 +815,9 @@
       const top = Object.entries(fam).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
       caja.innerHTML = `<div class="rot">Patio · Raúl</div>
-        <div class="ex-n">${num(enCatalogo)}<span class="u">en el catálogo</span></div>
-        <div class="ex-pie">Piezas publicadas en la web. <b>No es el total del patio</b> — hay piezas sin ficha.</div>
+        <div class="ex-n">${num(enCatalogo)}<span class="u">piezas publicadas</span></div>
+        <div class="ex-pie">Las que se ven en <b>fotonas.tractopartes.com/catalogo</b>, o sea el catálogo
+        que ve el cliente. <b>El patio tiene más</b> — hay piezas que nunca se publicaron.</div>
         <div style="margin-top:15px">
         ${filas([
           ['Dadas de alta · 7 días',  num(alta7)],
@@ -957,6 +969,21 @@
     const d = Math.round(h/24);
     return {txt:'hace '+d+(d===1?' día':' días'), viejo:h>30};
   }
+  /* Un número solo no dice nada. 189 visitas ¿es bueno? Depende de contra qué.
+     Aquí se compara la semana contra el RITMO de los últimos 30 días
+     (d30/30*7). Es la única comparación honesta que se puede hacer con lo
+     que manda el robot — no hay histórico de semanas anteriores. */
+  function ritmo(d7, d30){
+    if(!d30 || d30 < 10) return null;              // con pocos datos la comparación miente
+    const esperado = d30/30*7;
+    if(esperado < 1) return null;
+    const pct = Math.round((d7-esperado)/esperado*100);
+    if(Math.abs(pct) < 8) return {txt:'va a su ritmo de siempre', color:'#8b8578'};
+    return pct > 0
+      ? {txt:'▲ '+pct+'% arriba de su ritmo', color:'#4f9e6a'}
+      : {txt:'▼ '+Math.abs(pct)+'% abajo de su ritmo', color:'#d2503c'};
+  }
+
   function nombreVideo(n){
     const m = String(n).match(/^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/);
     if(!m) return n;
@@ -968,16 +995,20 @@
       <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#5d584e">Sin datos</div>
       <div class="ex-nota">El robot todavía no ha dejado nada para esta propiedad.</div>`; return; }
     const vivo = (d.ahorita||0) > 0;
+    const r = ritmo(d.d7||0, d.d30||0);
+    const porDia = (d.d30||0) ? Math.round((d.d30/30)*10)/10 : 0;
     caja.innerHTML = `<div class="rot">${esc(rot)}</div>
-      <div class="ex-n">${num(d.hoy||0)}<span class="u">hoy</span></div>
-      <div class="ex-pie">${ vivo
-        ? '<b style="color:#4f9e6a">● '+num(d.ahorita)+'</b> ahorita mismo, en los últimos 30 minutos.'
-        : 'Nadie en los últimos 30 minutos.' }</div>
+      <div class="ex-n">${num(d.d7||0)}<span class="u">esta semana</span></div>
+      <div class="ex-pie">${ r
+        ? '<b style="color:'+r.color+'">'+esc(r.txt)+'</b>'
+        : 'Todavía no hay suficiente para comparar.' }</div>
       <div style="margin-top:15px">
       ${filas([
-        ['Ayer',     num(d.ayer||0)],
-        ['7 días',   num(d.d7||0)],
-        ['30 días',  num(d.d30||0)]
+        ['Ahorita · últimos 30 min', vivo ? '● '+num(d.ahorita) : '—'],
+        ['Hoy',                      num(d.hoy||0)],
+        ['Ayer',                     num(d.ayer||0)],
+        ['30 días',                  num(d.d30||0)],
+        ['Promedio por día',         num(porDia)]
       ])}</div>
       ${viejo ? '<div class="ex-nota mala">⚠ Estos números están viejos — el robot no ha corrido. Puede ser que la Mac estuviera dormida.</div>' : ''}`;
   }
@@ -986,15 +1017,20 @@
     if(!lista || !lista.length){ caja.innerHTML=`<div class="rot">Videos · Ricardo</div>
       <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#5d584e">Sin datos</div>`; return; }
     const conDato = lista.filter(v=>typeof v.vistas_24h === 'number');
-    const mejor = conDato.length ? Math.max.apply(null, conDato.map(v=>v.vistas_24h)) : null;
+    const prom = conDato.length ? Math.round(conDato.reduce((a,v)=>a+v.vistas_24h,0)/conDato.length) : null;
     caja.innerHTML = `<div class="rot">Videos · Ricardo</div>
-      <div class="ex-n">${mejor!==null?num(mejor):'—'}<span class="u">el mejor, a 24 h</span></div>
-      <div class="ex-pie">Los últimos ${lista.length} que salieron.</div>
+      <div class="ex-n">${prom!==null?num(prom):'—'}<span class="u">promedio a 24 h</span></div>
+      <div class="ex-pie">De los ${conDato.length} que ya cumplieron sus 24 horas,
+      de ${lista.length} publicados.</div>
       <div style="margin-top:15px">
-      ${filas(lista.map(v=>[
-        nombreVideo(v.nombre),
-        typeof v.vistas_24h==='number' ? num(v.vistas_24h)+' vistas' : 'midiendo…'
-      ]))}</div>
+      ${filas(lista.map(v=>{
+        if(typeof v.vistas_24h!=='number') return [nombreVideo(v.nombre),'midiendo…'];
+        const dif = prom ? Math.round((v.vistas_24h-prom)/prom*100) : 0;
+        const marca = Math.abs(dif)<12 ? '' :
+          (dif>0 ? ' <span style="color:#4f9e6a">▲'+dif+'%</span>'
+                 : ' <span style="color:#d2503c">▼'+Math.abs(dif)+'%</span>');
+        return [nombreVideo(v.nombre), num(v.vistas_24h)+marca];
+      }))}</div>
       <div class="ex-nota">«Midiendo» es a propósito: ese video todavía no cumple sus 24 horas.
       Antes de eso <b>no hay número que dar</b>, y no se inventa.</div>
       ${viejo ? '<div class="ex-nota mala">⚠ El robot no ha corrido; puede faltar el más reciente.</div>' : ''}`;
@@ -1071,7 +1107,6 @@
   }
   function cerrarExtras(){ $('#extras').classList.remove('show'); document.body.style.overflow=''; }
 
-  $('#bExtras').addEventListener('click',abrirExtras);
   $('#exSalir').addEventListener('click',cerrarExtras);
 
   $('#bAjustes').addEventListener('click',abrirAjustes);
