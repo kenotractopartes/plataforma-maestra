@@ -379,6 +379,8 @@
     .quien{font-size:14px}
     .placa{padding:8px 24px 40px;justify-content:flex-start}
     .tools{left:20px;bottom:16px;opacity:1}
+    /* arriba tapaba los iconos de los primeros sistemas */
+    .caida{top:auto;bottom:74px;left:16px;right:16px;justify-content:center}
   }
   @media(prefers-reduced-motion:reduce){
     .toma.viva{animation:none}.grano{animation:none}
@@ -528,12 +530,13 @@
     }).sort((a,b)=>a.orden-b.orden).map((s,i)=>{s.orden=i;return s;});
   }
   function guardar(){
-    try{ localStorage.setItem(LS,JSON.stringify({systems:todos.map(s=>
+    try{ localStorage.setItem(LS,JSON.stringify({defv:DEFV, systems:todos.map(s=>
       ({id:s.id,url:s.url,alt:s.alt,color:s.color,orden:s.orden,oculto:!!s.oculto}))})); }catch(e){}
   }
 
   /* ── el fondo: una capa por sistema, se cruzan con fundido ── */
   function pintarEscena(s){
+    if(!s) return;                    // sin sistema no hay nada que pintar
     const esc_ = $('#escena');
     if(!tomas[s.id]){
       const d=document.createElement('div'); d.className='toma'+(s.desliza?' desliza':'');
@@ -565,11 +568,14 @@
       f.addEventListener('click',()=>{ elegir(i); entrar(); });
       r.appendChild(f);
     });
+    // al redibujar se perdían los focos: devolverlos con lo que ya se sabía
+    sist.forEach(x=>{ if(x.estadoRed) pintarFoco(x.id, x.estadoRed); });
   }
 
   /* ── el título grande de la derecha ── */
   function pintarPlaca(){
     const s=sist[sel], p=$('#placa');
+    if(!s || !p) return;
     p.classList.remove('entra');
     const listo = !!(s.url || s.alt) || !!s.panel;
     // si vive en la Mac, decir desde dónde se está alcanzando
@@ -589,9 +595,12 @@
     document.querySelectorAll('.fila').forEach((f,k)=>f.classList.toggle('sel',k===sel));
     pintarEscena(sist[sel]); pintarPlaca();
   }
+  let ultimoAbierto = 0;
   function entrar(){
-    const s=sist[sel];
-    if(s.panel){ abrirExtras(); return; }   // Extras no abre una liga: abre su capa
+    const s=sist[sel]; if(!s) return;
+    if(s.panel){ abrirExtras(); return; }
+    if(Date.now()-ultimoAbierto < 900) return;   // doble clic abría dos pestañas iguales
+    ultimoAbierto = Date.now();   // Extras no abre una liga: abre su capa
     const d = s.viva || s.url;          // la que contestó; si no, la de siempre
     if(!d) return;
     try{ localStorage.setItem(LSULT,s.id); }catch(e){}   // para dejarlo listo la próxima
@@ -687,7 +696,12 @@
         <div class="abajo"><input type="color" data-c="${esc(s.id)}" value="${esc(s.color)}" />
           <span style="font-size:11.5px;color:#6f6a60">Color de ${esc(s.quien)}</span></div>`;
       it.querySelector('[data-ojo]').addEventListener('click',()=>{
-        leer(); s.oculto=!s.oculto; guardar();
+        leer();
+        // si al esconderlo no quedaría ninguno, el riel truena y Ajustes se traba
+        if(!s.oculto && todos.filter(x=>!x.oculto).length <= 1){
+          alert('Tiene que quedar al menos un sistema a la vista.'); return;
+        }
+        s.oculto=!s.oculto; guardar();
         refrescarVisibles(); pintarRiel(); pintarEscena(sist[sel]); pintarPlaca(); abrirAjustes();
       });
       it.querySelector('[data-sube]').addEventListener('click',()=>mover(s.id,-1));
@@ -768,6 +782,15 @@
   const DIA = 86400000;
   const cache = {};                    // no volver a bajar lo mismo en la misma sesión
 
+  /* Con internet lento (el WiFi de una escuela, por ejemplo) las tarjetas se
+     quedaban girando PARA SIEMPRE. Medido: 35 s y seguían dando vueltas.
+     Todo lo que baje pasa por aquí y a los 12 s se rinde con un mensaje. */
+  function conLimite(promesa, seg, queEs){
+    return Promise.race([ promesa,
+      new Promise((_,mal)=>setTimeout(()=>mal(new Error('LENTO:'+queEs)), (seg||12)*1000)) ]);
+  }
+  function esLento(e){ return String(e && e.message||'').indexOf('LENTO:')===0; }
+
   const pesos = n => '$' + Math.round(n).toLocaleString('es-MX');
   const num   = n => n.toLocaleString('es-MX');
 
@@ -799,7 +822,7 @@
       <div class="ex-pie">Leyendo el catálogo…</div>`;
     try{
       if(!cache.fichas){
-        const r = await fetch(INV_URL+'/fichas_publicas.json',{cache:'no-store'});
+        const r = await conLimite(fetch(INV_URL+'/fichas_publicas.json',{cache:'no-store'}), 12, 'catálogo');
         if(!r.ok) throw new Error('HTTP '+r.status);
         cache.fichas = await r.json();
       }
@@ -831,7 +854,9 @@
     }catch(e){
       caja.innerHTML = `<div class="rot">Patio · Raúl</div>
         <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
-        <div class="ex-nota mala">No se pudo leer el catálogo: ${esc(String(e.message||e))}</div>`;
+        <div class="ex-nota mala">${ esLento(e)
+          ? 'El internet está muy lento y no contestó a tiempo.'
+          : 'No se pudo leer el catálogo: '+esc(String(e.message||e)) }</div>`;
     }
   }
 
@@ -881,7 +906,8 @@
           (c.indexOf('wrong-password')>=0 || c.indexOf('invalid-credential')>=0) ? 'Correo o contraseña equivocados.' :
           c.indexOf('user-not-found')>=0 ? 'Ese correo no tiene cuenta aquí.' :
           c.indexOf('too-many')>=0 ? 'Muchos intentos. Espérate tantito.' :
-          (e.message||'No se pudo entrar.');
+          c.indexOf('network')>=0 ? 'No hay internet, o esta red no deja pasar a Firebase.' :
+          'No se pudo entrar. Revisa tu internet.';
         const b=caja.querySelector('#mEntrar'); if(b) b.textContent='Ver los números';
       }
     };
@@ -911,10 +937,12 @@
       }
       const ing=cache.maura.ing, egr=cache.maura.egr;
       const d = new Date();
-      const iso = x => x.toISOString().slice(0,10);
+      /* Monterrey es UTC-6. Con toISOString(), a las 6 de la tarde la fecha
+         ya brincaba al día siguiente y «hoy» se ponía en cero solo. */
+      const iso = x => x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
       const hoy = iso(d);
       const hace = n => iso(new Date(d.getTime()-n*DIA));
-      const d7 = hace(7), d30 = hace(30);
+      const d7 = hace(6), d30 = hace(29);   // hoy cuenta: 7 días son hoy + 6 atrás
 
       const enRango=(r,desde)=> r.fecha && r.fecha>=desde && r.fecha<=hoy;
       const suma=(l)=>l.reduce((a,r)=>a+(Number(r.monto)||0),0);
@@ -930,21 +958,38 @@
       }));
       cuentaAbonos(ing,'abonosExtras'); cuentaAbonos(egr,'abonosExtrasEgr');
 
+      /* 🔴 OJO CON ESTOS NÚMEROS. Aquí se suma el 'monto' EN CRUDO de cada
+         registro. NO es el gasto del negocio: adentro va el dinero en tránsito
+         a DMG, la compra de mercancía, las reparaciones y lo de la familia —
+         todo lo que Keno ya decidió que NO es gasto. Medido: Extras daba
+         $3,157,856 donde el Panel decía $804,231, casi 4 veces más.
+         NO se copian aquí las reglas del Panel a propósito: el gasto lo decide
+         UN SOLO LUGAR (desgloseGasto en el Panel de Papá) y duplicarlo sería
+         volver a tener dos verdades. Aquí se dice lo que ES: movimiento bruto. */
       caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
-        <div class="ex-n">${pesos(suma(i7))}<span class="u">7 días</span></div>
-        <div class="ex-pie">Ingresos registrados en el mostrador.</div>
+        <div class="ex-n">${num(i7.length + e7.length)}<span class="u">movimientos · 7 días</span></div>
+        <div class="ex-pie">Cuántas veces se registró algo en el mostrador.</div>
         <div style="margin-top:15px">
         ${filas([
-          ['Ingresos · hoy',     num(iHoy.length)+'  ·  '+pesos(suma(iHoy))],
-          ['Ingresos · 7 días',  num(i7.length)+'  ·  '+pesos(suma(i7))],
-          ['Ingresos · 30 días', num(i30.length)+'  ·  '+pesos(suma(i30))],
-          ['Egresos · hoy',      num(eHoy.length)+'  ·  '+pesos(suma(eHoy))],
-          ['Egresos · 7 días',   num(e7.length)+'  ·  '+pesos(suma(e7))],
-          ['Egresos · 30 días',  num(e30.length)+'  ·  '+pesos(suma(e30))],
-          ['Abonos · 7 días',    num(ab7)+'  ·  '+pesos(abM7)]
+          ['Ingresos · hoy',     num(iHoy.length)],
+          ['Ingresos · 7 días',  num(i7.length)],
+          ['Ingresos · 30 días', num(i30.length)],
+          ['Egresos · hoy',      num(eHoy.length)],
+          ['Egresos · 7 días',   num(e7.length)],
+          ['Egresos · 30 días',  num(e30.length)],
+          ['Abonos · 7 días',    num(ab7)]
         ])}</div>
-        <div class="ex-nota">El <b>bono</b> no sale aquí porque no existe en el sistema de Maura:
-        es una cuenta semanal aparte que además necesita el libro de Blanca.</div>`;
+        <div style="margin-top:16px;padding-top:13px;border-top:1px solid rgba(255,255,255,.07)">
+          <div class="rot" style="color:#6f6a60">Movimiento bruto · 7 días</div>
+          ${filas([
+            ['Entró', pesos(suma(i7))],
+            ['Salió', pesos(suma(e7))]
+          ])}
+        </div>
+        <div class="ex-nota"><b>Eso NO es el gasto del negocio.</b> Ahí va incluido el
+        dinero en tránsito, la mercancía, las reparaciones y lo de la familia.
+        El gasto de verdad lo dice <b>el Panel de tu papá</b>, y sale como 4 veces
+        más chico. Aquí solo se ve el movimiento del mostrador.</div>`;
     }catch(e){
       const c=String(e.code||e.message||e);
       caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
@@ -1043,7 +1088,7 @@
     });
     try{
       if(!cache.metricas){
-        const r = await fetch(INV_URL+'/metricas_publicas.json',{cache:'no-store'});
+        const r = await conLimite(fetch(INV_URL+'/metricas_publicas.json',{cache:'no-store'}), 12, 'números');
         if(!r.ok) throw new Error('HTTP '+r.status);
         cache.metricas = await r.json();
       }
@@ -1062,7 +1107,9 @@
       [cWeb,cCat,cVid].forEach(c=>{
         c.innerHTML = `<div class="rot">${c.dataset.rot}</div>
           <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
-          <div class="ex-nota mala">No se pudo leer lo que deja el robot: ${esc(String(e.message||e))}</div>`;
+          <div class="ex-nota mala">${ esLento(e)
+            ? 'El internet está muy lento y no contestó a tiempo.'
+            : 'No se pudo leer lo que deja el robot: '+esc(String(e.message||e)) }</div>`;
       });
     }
   }
@@ -1073,12 +1120,21 @@
   }
 
   function abrirExtras(){
+    // si ya pasaron 10 min, volver a bajar: si no, los números se congelan
+    if(cache.cuando && Date.now()-cache.cuando > 600000){
+      cache.fichas=null; cache.metricas=null; cache.maura=null;
+    }
+    cache.cuando = Date.now();
     const rej=$('#exRej'); rej.innerHTML='';
     const f=new Date();
     $('#exCuando').textContent = f.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
 
     const cRaul=tarjeta({rot:'Patio · Raúl', color:'#e0563f', cuerpo:''});
-    const cMaura=tarjeta({rot:'Mostrador · Maura', color:'#d8a53f', cuerpo:''});
+    // sin este cuerpo de arranque, si la red bloquea gstatic esta tarjeta se
+    // quedaba COMPLETAMENTE vacía — ni rueda ni mensaje. Medido en 35 s.
+    const cMaura=tarjeta({rot:'Mostrador · Maura', color:'#d8a53f',
+      cuerpo:'<div class="ex-n"><span class="ex-cargando"></span></div>'
+            +'<div class="ex-pie">Preparando la entrada…</div>'});
     rej.appendChild(cRaul); rej.appendChild(cMaura);
 
     const cWeb=tarjeta({rot:'Página web',      color:'#3b3fb8', cuerpo:''});
@@ -1100,10 +1156,15 @@
 
     pintarRaul(cRaul);
     pintarMetricas(cWeb,cCat,cVid);
-    cargarSDK().then(function(){
+    conLimite(cargarSDK(), 12, 'firebase').then(function(){
       const a=appMaura().auth();
       a.onAuthStateChanged(function(u){ if(u) pintarMaura(cMaura); else pedirLlave(cMaura); });
-    }).catch(function(){ pedirLlave(cMaura); });
+    }).catch(function(e){
+      cMaura.innerHTML = '<div class="rot">Mostrador · Maura</div>'
+        +'<div class="ex-n" style="font-size:24px;font-family:var(--sans);color:#e0765f">No se pudo</div>'
+        +'<div class="ex-nota mala">No cargó Firebase. Puede ser que esta red lo bloquee '
+        +'(pasa en el WiFi de escuelas y oficinas) o que no haya internet.</div>';
+    });
   }
   function cerrarExtras(){ $('#extras').classList.remove('show'); document.body.style.overflow=''; }
 
@@ -1117,7 +1178,10 @@
 
   // teclado: flechas para moverse, Enter para entrar (como en la tele)
   document.addEventListener('keydown',e=>{
-    if(e.target.tagName==='INPUT') return;
+    // 🔴 con el candado puesto, un Enter abría sistemas sin escribir la contraseña
+    const g=$('#gate'); if(g && g.style.display!=='none') return;
+    // el Enter sobre un botón lo maneja el botón, no nosotros (si no, abre doble)
+    if(/^(INPUT|TEXTAREA|BUTTON|A|SELECT)$/.test(e.target.tagName)) return;
     if($('#extras').classList.contains('show')){
       if(e.key==='Escape') cerrarExtras();
       return;
