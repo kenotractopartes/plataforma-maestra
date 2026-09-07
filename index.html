@@ -299,6 +299,7 @@
   .ex-rej{
     display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));
     gap:16px;margin-top:30px;max-width:1320px;
+    align-items:start;          /* si no, la cerrada se estira al alto de la abierta */
   }
   .ex-t{
     background:rgba(255,255,255,.032);
@@ -314,7 +315,22 @@
 
   /* La cabecera de cada tarjeta usa el MISMO formato que los botones del
      inicio: cuadrito con el icono, nombre en serif y su renglón chiquito. */
-  .ex-cabt{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  /* Cerrada = botón: solo cabecera y el número grande. Abierta = todo.
+     Era demasiada información de golpe con las 7 abiertas. */
+  .ex-t.cerrada > *:not(.ex-cabt):not(.ex-n){display:none}
+  .ex-t.cerrada .ex-n{font-size:34px;margin-bottom:2px}
+  .ex-t.cerrada{padding-bottom:20px}
+  .ex-t{transition:padding .3s var(--suave)}
+
+  .ex-cabt{display:flex;align-items:center;gap:12px;margin-bottom:16px;
+           cursor:pointer;user-select:none;border-radius:10px;
+           transition:opacity .2s}
+  .ex-cabt:hover{opacity:.78}
+  .ex-cabt .flecha{
+    flex-shrink:0;font-size:11px;color:var(--tc,#6f6a60);
+    transition:transform .3s var(--suave);transform:rotate(0deg);
+  }
+  .ex-t:not(.cerrada) .ex-cabt .flecha{transform:rotate(180deg)}
   .ex-cabt .ficha{width:44px;height:44px;border-radius:12px;font-size:21px;
     border-color:var(--tc,rgba(255,255,255,.10))}
   .ex-cabt .textos{min-width:0;flex:1}
@@ -875,11 +891,12 @@
       <div class="ficha">${i.em}</div>
       <div class="textos"><div class="quien">${esc(i.quien)}</div>
       <div class="quees">${esc(i.quees)}</div></div>
+      <div class="flecha">▼</div>
     </div>`;
   }
   function tarjeta(o){
     const t=document.createElement('div');
-    t.className='ex-t'+(o.clase?' '+o.clase:'');
+    t.className='ex-t cerrada'+(o.clase?' '+o.clase:'');
     if(o.color) t.style.setProperty('--tc',o.color);
     t.dataset.rot=o.rot;
     t.innerHTML=cabecera(o.rot)+`<div class="rot">${esc(o.rot)}</div>${o.cuerpo}`;
@@ -1310,6 +1327,12 @@
         +'(pasa en el WiFi de escuelas y oficinas) o que no haya internet.</div>';
     });
   }
+  $('#exRej').addEventListener('click',function(e){
+    const cab = e.target.closest('.ex-cabt'); if(!cab) return;
+    const t = cab.closest('.ex-t'); if(!t) return;
+    t.classList.toggle('cerrada');
+  });
+
   function cerrarVisualExtras(){
     if(cache.desuscribir){ try{ cache.desuscribir(); }catch(e){} cache.desuscribir=null; }
     $('#extras').classList.remove('show'); document.body.style.overflow='';
