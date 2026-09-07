@@ -312,8 +312,19 @@
   .ex-t::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,#3a3630)}
   .ex-t.ancha{grid-column:span 2}
 
-  .ex-t .rot{font-size:10px;letter-spacing:.22em;text-transform:uppercase;
-             color:var(--tc,#6f6a60);font-weight:700;margin-bottom:13px}
+  /* La cabecera de cada tarjeta usa el MISMO formato que los botones del
+     inicio: cuadrito con el icono, nombre en serif y su renglón chiquito. */
+  .ex-cabt{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .ex-cabt .ficha{width:44px;height:44px;border-radius:12px;font-size:21px;
+    border-color:var(--tc,rgba(255,255,255,.10))}
+  .ex-cabt .textos{min-width:0;flex:1}
+  .ex-cabt .quien{font-family:var(--serif);font-size:19px;line-height:1.1;color:var(--hueso);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ex-cabt .quees{font-size:11px;color:var(--tc,#6f6a60);margin-top:3px;
+    letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* el rótulo viejo se queda por si algo lo usa, pero ya no se ve */
+  .ex-t .rot{display:none}
   /* Georgia trae cifras de TEXTO (el 3,4,7,9 bajan de la línea). Para UN
      número grande se ve editorial y queda bien; para columnas, NO. */
   .ex-n{font-family:var(--serif);font-size:47px;line-height:.95;letter-spacing:-.015em;color:var(--hueso)}
@@ -747,6 +758,7 @@
       c.appendChild(it);
     });
     $('#modal').classList.add('show');
+    marcarCapa('ajustes');
   }
   function leer(){
     const c=$('#cuerpo'); if(!c) return;
@@ -839,11 +851,30 @@
     return null;                                          // arneses: no se sabe
   }
 
+  /* Los sistemas del riel, para poder reusar su icono y su nombre exactos */
+  const ICONOS = {
+    'Patio · Raúl':      {em:'🏗️', quien:'Raúl',        quees:'Patio'},
+    'Mostrador · Maura': {em:'📒', quien:'Maura',       quees:'Mostrador'},
+    'Papeles · Chasis':  {em:'📋', quien:'Chasis',      quees:'Papeles'},
+    'Página web':        {em:'🌐', quien:'Página web',  quees:'Lo que ve el cliente'},
+    'Catálogo':          {em:'🏷️', quien:'Catálogo',    quees:'Lo que ve el cliente'},
+    'Videos · Ricardo':  {em:'🎬', quien:'Videos',      quees:'Ricardo'},
+    'Piezas y envíos':   {em:'📦', quien:'Piezas y envíos', quees:'Patio'}
+  };
+  function cabecera(rot){
+    const i = ICONOS[rot] || {em:'▦', quien:rot, quees:''};
+    return `<div class="ex-cabt">
+      <div class="ficha">${i.em}</div>
+      <div class="textos"><div class="quien">${esc(i.quien)}</div>
+      <div class="quees">${esc(i.quees)}</div></div>
+    </div>`;
+  }
   function tarjeta(o){
     const t=document.createElement('div');
     t.className='ex-t'+(o.clase?' '+o.clase:'');
     if(o.color) t.style.setProperty('--tc',o.color);
-    t.innerHTML=`<div class="rot">${esc(o.rot)}</div>${o.cuerpo}`;
+    t.dataset.rot=o.rot;
+    t.innerHTML=cabecera(o.rot)+`<div class="rot">${esc(o.rot)}</div>${o.cuerpo}`;
     return t;
   }
   function filas(lista){
@@ -852,7 +883,7 @@
 
   // ── RAÚL: sale del catálogo público, sin sesión ni nada ──
   async function pintarRaul(caja){
-    caja.innerHTML = `<div class="rot">Patio · Raúl</div>
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Patio · Raúl</div>
       <div class="ex-n"><span class="ex-cargando"></span></div>
       <div class="ex-pie">Leyendo el catálogo…</div>`;
     try{
@@ -875,7 +906,7 @@
       f.forEach(([,v])=>{ if(v.web===true){ const n=v.familiaNombre||v.familia||'—'; fam[n]=(fam[n]||0)+1; }});
       const top = Object.entries(fam).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
-      caja.innerHTML = `<div class="rot">Patio · Raúl</div>
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Patio · Raúl</div>
         <div class="ex-n">${num(enCatalogo)}<span class="u">piezas publicadas</span></div>
         <div class="ex-pie">Las que se ven en <b>fotonas.tractopartes.com/catalogo</b>, o sea el catálogo
         que ve el cliente. <b>El patio tiene más</b> — hay piezas que nunca se publicaron.</div>
@@ -895,7 +926,7 @@
         una fecha de venta de verdad.</div>
         <div style="margin-top:15px">${filas(top.map(([n,c])=>[n,num(c)]))}</div>`;
     }catch(e){
-      caja.innerHTML = `<div class="rot">Patio · Raúl</div>
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Patio · Raúl</div>
         <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
         <div class="ex-nota mala">${ esLento(e)
           ? 'El internet está muy lento y no contestó a tiempo.'
@@ -921,7 +952,7 @@
   }
 
   function pedirLlave(caja){
-    caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Mostrador · Maura</div>
       <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#8b8578">Bajo llave</div>
       <div class="ex-pie">Aquí hay pesos. Entra con tu cuenta para verlos —
       la contraseña de esta página no alcanza, y así está bien.</div>
@@ -959,7 +990,7 @@
   }
 
   async function pintarMaura(caja){
-    caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Mostrador · Maura</div>
       <div class="ex-n"><span class="ex-cargando"></span></div>
       <div class="ex-pie">Bajando registros…</div>`;
     try{
@@ -1009,7 +1040,7 @@
          NO se copian aquí las reglas del Panel a propósito: el gasto lo decide
          UN SOLO LUGAR (desgloseGasto en el Panel de Papá) y duplicarlo sería
          volver a tener dos verdades. Aquí se dice lo que ES: movimiento bruto. */
-      caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Mostrador · Maura</div>
         <div class="ex-n">${num(i7.length + e7.length)}<span class="u">movimientos · 7 días</span></div>
         <div class="ex-pie">Cuántas veces se registró algo en el mostrador.</div>
         <div style="margin-top:15px">
@@ -1035,7 +1066,7 @@
         más chico. Aquí solo se ve el movimiento del mostrador.</div>`;
     }catch(e){
       const c=String(e.code||e.message||e);
-      caja.innerHTML = `<div class="rot">Mostrador · Maura</div>
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Mostrador · Maura</div>
         <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
         <div class="ex-nota mala">${c.indexOf('permission')>=0
           ? 'Esa cuenta no tiene permiso de leer los datos de Maura.'
@@ -1083,13 +1114,13 @@
   }
 
   function pintarSitio(caja, rot, d, viejo){
-    if(!d){ caja.innerHTML=`<div class="rot">${esc(rot)}</div>
+    if(!d){ caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">${esc(rot)}</div>
       <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#5d584e">Sin datos</div>
       <div class="ex-nota">El robot todavía no ha dejado nada para esta propiedad.</div>`; return; }
     const vivo = (d.ahorita||0) > 0;
     const r = ritmo(d.d7||0, d.d30||0);
     const porDia = (d.d30||0) ? Math.round((d.d30/30)*10)/10 : 0;
-    caja.innerHTML = `<div class="rot">${esc(rot)}</div>
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">${esc(rot)}</div>
       <div class="ex-n">${num(d.d7||0)}<span class="u">esta semana</span></div>
       <div class="ex-pie">${ r
         ? '<b style="color:'+r.color+'">'+esc(r.txt)+'</b>'
@@ -1106,11 +1137,11 @@
   }
 
   function pintarVideos(caja, lista, viejo){
-    if(!lista || !lista.length){ caja.innerHTML=`<div class="rot">Videos · Ricardo</div>
+    if(!lista || !lista.length){ caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Videos · Ricardo</div>
       <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#5d584e">Sin datos</div>`; return; }
     const conDato = lista.filter(v=>typeof v.vistas_24h === 'number');
     const prom = conDato.length ? Math.round(conDato.reduce((a,v)=>a+v.vistas_24h,0)/conDato.length) : null;
-    caja.innerHTML = `<div class="rot">Videos · Ricardo</div>
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Videos · Ricardo</div>
       <div class="ex-n">${prom!==null?num(prom):'—'}<span class="u">promedio a 24 h</span></div>
       <div class="ex-pie">De los ${conDato.length} que ya traen número, de ${lista.length} publicados.</div>
       <div style="margin-top:15px">
@@ -1137,7 +1168,7 @@
 
   async function pintarMetricas(cWeb, cCat, cVid){
     [cWeb,cCat,cVid].forEach(c=>{
-      c.innerHTML = `<div class="rot">${c.dataset.rot}</div>
+      c.innerHTML = cabecera(c.dataset.rot) + `<div class="rot">${c.dataset.rot}</div>
         <div class="ex-n"><span class="ex-cargando"></span></div>`;
     });
     try{
@@ -1159,7 +1190,7 @@
       pintarVideos(cVid, m.videos, f.viejo);
     }catch(e){
       [cWeb,cCat,cVid].forEach(c=>{
-        c.innerHTML = `<div class="rot">${c.dataset.rot}</div>
+        c.innerHTML = cabecera(c.dataset.rot) + `<div class="rot">${c.dataset.rot}</div>
           <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
           <div class="ex-nota mala">${ esLento(e)
             ? 'El internet está muy lento y no contestó a tiempo.'
@@ -1172,7 +1203,7 @@
      SOLO LEE — nunca escribe. Ojo: ese nodo tiene una llave de escritura
      publicada en el código del inventario; ya está pedido que la cierren. */
   async function pintarChasis(caja){
-    caja.innerHTML = `<div class="rot">Papeles · Chasis</div>
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Papeles · Chasis</div>
       <div class="ex-n"><span class="ex-cargando"></span></div>`;
     try{
       if(!cache.chasis){
@@ -1191,7 +1222,7 @@
         (x.marca||'—')+' '+(x.anio||''),
         '<span style="color:#a89f8e;font-size:11.5px">'+esc(String(x.serie||'sin serie').slice(-8))+'</span>'
       ]);
-      caja.innerHTML = `<div class="rot">Papeles · Chasis</div>
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Papeles · Chasis</div>
         <div class="ex-n">${num(pend.length)}<span class="u">de ${num(ch.length)} con algo pendiente</span></div>
         <div class="ex-pie">Camiones cuyo papeleo no está cerrado.</div>
         <div style="margin-top:15px">
@@ -1204,7 +1235,7 @@
         <div class="ex-nota">Se edita en el sistema de Maura, en «Estatus de chasis».
         Aquí solo se ve.</div>`;
     }catch(e){
-      caja.innerHTML = `<div class="rot">Papeles · Chasis</div>
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Papeles · Chasis</div>
         <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
         <div class="ex-nota mala">${ esLento(e) ? 'El internet está muy lento y no contestó a tiempo.'
           : 'No se pudieron leer: '+esc(String(e.message||e)) }</div>`;
@@ -1249,6 +1280,7 @@
 
     $('#extras').classList.add('show');
     document.body.style.overflow='hidden';
+    marcarCapa('extras');
     // que las tarjetas entren escalonadas, como la placa
     [].slice.call(rej.querySelectorAll('.ex-t')).forEach(function(t,i){ t.style.transitionDelay=(i*0.05)+'s'; });
 
@@ -1263,24 +1295,48 @@
         if(u) pintarMaura(cMaura); else pedirLlave(cMaura);
       });
     }).catch(function(e){
-      cMaura.innerHTML = '<div class="rot">Mostrador · Maura</div>'
+      cMaura.innerHTML = cabecera('Mostrador · Maura') + '<div class="rot">Mostrador · Maura</div>'
         +'<div class="ex-n" style="font-size:24px;font-family:var(--sans);color:#e0765f">No se pudo</div>'
         +'<div class="ex-nota mala">No cargó Firebase. Puede ser que esta red lo bloquee '
         +'(pasa en el WiFi de escuelas y oficinas) o que no haya internet.</div>';
     });
   }
-  function cerrarExtras(){
+  function cerrarVisualExtras(){
     if(cache.desuscribir){ try{ cache.desuscribir(); }catch(e){} cache.desuscribir=null; }
     $('#extras').classList.remove('show'); document.body.style.overflow='';
   }
+  function cerrarExtras(){
+    const eraNuestro = history.state && history.state.capa === 'extras';
+    cerrarVisualExtras();
+    if(eraNuestro) history.back();          // deja el historial como estaba
+  }
+
+  /* El botón de ATRÁS del navegador se salía de la plataforma y caía en el
+     buscador, porque Extras y Ajustes son capas y el navegador no se entera
+     de que están abiertas. Metiéndoles un paso al historial, «atrás» cierra
+     la capa — que es lo que cualquiera espera. */
+  function marcarCapa(cual){
+    if(!history.state || history.state.capa !== cual){
+      try{ history.pushState({capa:cual}, ''); }catch(e){}
+    }
+  }
+  window.addEventListener('popstate', function(){
+    if($('#extras').classList.contains('show')){ cerrarVisualExtras(); return; }
+    if($('#modal').classList.contains('show')){ $('#modal').classList.remove('show'); return; }
+  });
 
   $('#exSalir').addEventListener('click',cerrarExtras);
 
   $('#bAjustes').addEventListener('click',abrirAjustes);
-  $('#bCerrar').addEventListener('click',()=>$('#modal').classList.remove('show'));
+  function cerrarAjustes(){
+    const eraNuestro = history.state && history.state.capa === 'ajustes';
+    $('#modal').classList.remove('show');
+    if(eraNuestro) history.back();
+  }
+  $('#bCerrar').addEventListener('click',cerrarAjustes);
   $('#bGuardar').addEventListener('click',guardarAjustes);
   $('#bRestaurar').addEventListener('click',restaurar);
-  $('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') $('#modal').classList.remove('show'); });
+  $('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') cerrarAjustes(); });
 
   // teclado: flechas para moverse, Enter para entrar (como en la tele)
   document.addEventListener('keydown',e=>{
