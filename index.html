@@ -1268,6 +1268,125 @@
     }
   }
 
+
+  /* ── PIEZAS Y ENVÍOS. Vive en el proyecto de Raúl, en nodos que hasta
+        el 7 sep 2026 estaban cerrados a su correo. El otro chat abrió el
+        .read para kenotractopartes@gmail.com; el .write NO se tocó.
+        Es un proyecto DISTINTO al de Maura, así que es otra sesión. ── */
+  const CFG_INV = {
+    apiKey:"AIzaSyB8MRNvbAhk7tJa731DolvnnFr_1S9imLk",
+    authDomain:"inventario-julio-26.firebaseapp.com",
+    databaseURL:"https://inventario-julio-26-default-rtdb.firebaseio.com",
+    projectId:"inventario-julio-26",
+    storageBucket:"inventario-julio-26.firebasestorage.app",
+    messagingSenderId:"237695179240",
+    appId:"1:237695179240:web:57f16b77af33aa00cdec5d"
+  };
+  function appInv(){
+    try{ return firebase.app('inv'); }catch(e){ return firebase.initializeApp(CFG_INV,'inv'); }
+  }
+  function cargarSDKdb(){
+    if(window.firebase && firebase.database) return Promise.resolve();
+    if(cache.sdkdb) return cache.sdkdb;
+    const uno = src => new Promise((ok,mal)=>{
+      const e=document.createElement('script'); e.src=src; e.onload=ok; e.onerror=()=>mal(new Error('no cargó'));
+      document.head.appendChild(e);
+    });
+    const B='https://www.gstatic.com/firebasejs/10.12.2/';
+    cache.sdkdb = cargarSDK().then(()=>uno(B+'firebase-database-compat.js'));
+    return cache.sdkdb;
+  }
+
+  function pedirLlavePiezas(caja){
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">${esc(caja.dataset.rot)}</div>
+      <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#8b8578">Bajo llave</div>
+      <div class="ex-pie">El patio de Raúl es otro proyecto, así que pide su propia entrada.</div>
+      <div class="ex-llave">
+        <input type="email" id="pCorreo" placeholder="tu correo" autocomplete="username" value="kenotractopartes@gmail.com" />
+        <input type="password" id="pClave" placeholder="contraseña" autocomplete="current-password" />
+        <button id="pEntrar">Ver el patio</button>
+        <div class="ex-err" id="pErr"></div>
+      </div>`;
+    const ir = async ()=>{
+      const err=caja.querySelector('#pErr'); err.textContent='';
+      const correo=caja.querySelector('#pCorreo').value.trim(), clave=caja.querySelector('#pClave').value;
+      if(!correo||!clave){ err.textContent='Faltan datos.'; return; }
+      caja.querySelector('#pEntrar').textContent='Entrando…';
+      try{
+        await conLimite(cargarSDKdb(), 12, 'firebase');
+        const a = appInv().auth();
+        await a.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+        await a.signInWithEmailAndPassword(correo, clave);
+        pintarPiezas(caja);
+      }catch(e){
+        const c=String(e.code||'');
+        err.textContent =
+          (c.indexOf('wrong-password')>=0||c.indexOf('invalid-credential')>=0) ? 'Correo o contraseña equivocados.' :
+          c.indexOf('user-not-found')>=0 ? 'Ese correo todavía no tiene cuenta en el proyecto de Raúl.' :
+          c.indexOf('too-many')>=0 ? 'Muchos intentos. Espérate tantito.' :
+          c.indexOf('network')>=0 ? 'No hay internet, o esta red no deja pasar a Firebase.' :
+          'No se pudo entrar. Revisa tu internet.';
+        const b=caja.querySelector('#pEntrar'); if(b) b.textContent='Ver el patio';
+      }
+    };
+    caja.querySelector('#pEntrar').addEventListener('click',ir);
+    caja.querySelector('#pClave').addEventListener('keydown',ev=>{ if(ev.key==='Enter') ir(); });
+  }
+
+  async function pintarPiezas(caja){
+    caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">${esc(caja.dataset.rot)}</div>
+      <div class="ex-n"><span class="ex-cargando"></span></div>
+      <div class="ex-pie">Leyendo el patio…</div>`;
+    try{
+      await cargarSDKdb();
+      const db = appInv().database();
+      if(!cache.patio){
+        const leer = r => conLimite(db.ref(r).once('value').then(s=>s.val()), 15, r);
+        const tres = await Promise.all([
+          leer('inventario_patio/piezas'),
+          leer('inventario_patio/salidas'),
+          leer('envios')
+        ]);
+        cache.patio = { piezas:tres[0]||{}, salidas:tres[1]||{}, envios:tres[2]||{} };
+      }
+      const P = Object.values(cache.patio.piezas);
+      const hoy = Date.now();
+      const enRango = (t,d) => t && (hoy-t) <= d*DIA;
+      const alta7  = P.filter(p=>enRango(Number(p.fechaRegistro), 7)).length;
+      const alta30 = P.filter(p=>enRango(Number(p.fechaRegistro),30)).length;
+      const vendidas = P.filter(p=>p.vendida===true).length;
+      const conPrecio = P.filter(p=>Number(p.precioSugerido)>0 || Number(p.precioMax)>0).length;
+      const sinPrecio = P.length - conPrecio;
+      const rAlta = ritmo(alta7, alta30);
+      const nSalidas = Object.keys(cache.patio.salidas).length;
+      const nEnvios  = Object.keys(cache.patio.envios).length;
+
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">${esc(caja.dataset.rot)}</div>
+        <div class="ex-n">${num(P.length)}<span class="u">piezas en el patio</span></div>
+        <div class="ex-pie">El total de verdad — no el catálogo publicado.</div>
+        ${ rAlta ? '<div class="ex-pie" style="margin-top:6px"><b style="color:'+rAlta.color+'">'+esc(rAlta.txt)+'</b> dando de alta.</div>' : '' }
+        <div style="margin-top:15px">
+        ${filas([
+          ['Dadas de alta · 7 días',  num(alta7)],
+          ['Dadas de alta · 30 días', num(alta30)],
+          ['Marcadas vendidas',       num(vendidas)],
+          ['Sin precio',              num(sinPrecio)],
+          ['Salidas de taller',       num(nSalidas)],
+          ['Envíos registrados',      num(nEnvios)]
+        ])}</div>
+        <div class="ex-nota">Aquí <b>«dadas de alta» sí es la fecha real</b> de registro,
+        no la última edición como en el catálogo público. Este número es el bueno.</div>`;
+    }catch(e){
+      const c=String(e.code||e.message||e);
+      caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">${esc(caja.dataset.rot)}</div>
+        <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
+        <div class="ex-nota mala">${ esLento(e) ? 'El internet está muy lento y no contestó a tiempo.'
+          : c.indexOf('ermission')>=0 || c.indexOf('401')>=0
+            ? 'Esa cuenta no tiene permiso de leer el patio de Raúl.'
+            : 'No se pudo leer: '+esc(c) }</div>`;
+    }
+  }
+
   function faltante(rot,titulo,razon,color){
     return tarjeta({rot:rot, color:color, clase:'falta', cuerpo:
       `<div class="ex-n">${esc(titulo)}</div><div class="ex-nota">${razon}</div>`});
@@ -1276,7 +1395,7 @@
   function abrirExtras(){
     // si ya pasaron 10 min, volver a bajar: si no, los números se congelan
     if(cache.cuando && Date.now()-cache.cuando > 600000){
-      cache.fichas=null; cache.metricas=null; cache.maura=null; cache.chasis=null;
+      cache.fichas=null; cache.metricas=null; cache.maura=null; cache.chasis=null; cache.patio=null;
     }
     cache.cuando = Date.now();
     const rej=$('#exRej'); rej.innerHTML='';
@@ -1298,11 +1417,8 @@
     cWeb.dataset.rot='Página web'; cCat.dataset.rot='Catálogo'; cVid.dataset.rot='Videos · Ricardo';
     rej.appendChild(cWeb); rej.appendChild(cCat); rej.appendChild(cVid);
 
-    const sep=document.createElement('div'); sep.className='ex-sec';
-    sep.textContent='Falta conectar'; rej.appendChild(sep);
-
-    rej.appendChild(faltante('Piezas y envíos','Falta permiso',
-      'Dar de alta, poner precio y los envíos viven en un nodo cerrado con el correo de Raúl. Tú no tienes cuenta en ese proyecto todavía.','#e0563f'));
+    const cPiezas=tarjeta({rot:'Piezas y envíos', color:'#e0563f', cuerpo:''});
+    rej.appendChild(cPiezas);
 
     $('#extras').classList.add('show');
     document.body.style.overflow='hidden';
@@ -1312,6 +1428,17 @@
 
     pintarRaul(cRaul);
     pintarChasis(cChasis);
+    conLimite(cargarSDKdb(), 12, 'firebase').then(function(){
+      const a=appInv().auth();
+      if(cache.desuscribirInv){ try{ cache.desuscribirInv(); }catch(e){} }
+      cache.desuscribirInv = a.onAuthStateChanged(function(u){
+        if(u) pintarPiezas(cPiezas); else pedirLlavePiezas(cPiezas);
+      });
+    }).catch(function(){
+      cPiezas.innerHTML = cabecera('Piezas y envíos') + '<div class="rot">Piezas y envíos</div>'
+        +'<div class="ex-n" style="font-size:24px;font-family:var(--sans);color:#e0765f">No se pudo</div>'
+        +'<div class="ex-nota mala">No cargó Firebase. Puede ser que esta red lo bloquee.</div>';
+    });
     pintarMetricas(cWeb,cCat,cVid);
     conLimite(cargarSDK(), 12, 'firebase').then(function(){
       const a=appMaura().auth();
@@ -1335,6 +1462,7 @@
 
   function cerrarVisualExtras(){
     if(cache.desuscribir){ try{ cache.desuscribir(); }catch(e){} cache.desuscribir=null; }
+    if(cache.desuscribirInv){ try{ cache.desuscribirInv(); }catch(e){} cache.desuscribirInv=null; }
     $('#extras').classList.remove('show'); document.body.style.overflow='';
   }
   function cerrarExtras(){
