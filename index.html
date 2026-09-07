@@ -439,7 +439,7 @@
     <div id="cuerpo"></div>
     <div class="pie">
       <button id="bRestaurar">Restaurar</button>
-      <button id="bCerrar">Cerrar</button>
+      <button id="bCerrar">Listo</button>
       <button class="ok" id="bGuardar">Guardar</button>
     </div>
   </div>
@@ -584,8 +584,18 @@
       <h1>${esc(s.quien)}</h1>
       <div class="linea"></div>
       <button class="entrar${listo?'':' pendiente'}">${
-        s.panel ? 'Ver los números &nbsp;→' : listo ? 'Entrar &nbsp;→' : 'En construcción'}</button>`;
+        s.panel ? 'Ver los números &nbsp;→' : listo ? 'Entrar &nbsp;→' : 'En construcción'}</button>
+      ${ (s.casa && s.alt) ? `<button class="entrar otra" data-alt style="margin-top:10px;background:transparent;
+         color:#b9b2a4;border:1px solid rgba(255,255,255,.16);box-shadow:none;font-weight:500">
+         Abrir desde la red del negocio</button>` : '' }`;
     if(listo) p.querySelector('.entrar').addEventListener('click',entrar);
+    /* Desde una página pública no se puede adivinar si localhost sirve en esta
+       computadora. Adivinar no se puede; ofrecer las dos sí. */
+    const bAlt = p.querySelector('[data-alt]');
+    if(bAlt) bAlt.addEventListener('click',()=>{
+      const sep = s.alt.indexOf('?')===-1?'?':'&';
+      window.open(s.alt+sep+'_v='+Date.now(),'_blank','noopener');
+    });
     requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add('entra')));
   }
 
@@ -656,8 +666,33 @@
             : estado==='encasa' ? 'Vive en tu Mac — ábrelo desde ahí'
             : 'Sin dirección';
   }
+  /* Un WiFi con portal de login (escuelas, cafés, hoteles) contesta a TODO,
+     así que el fetch en modo no-cors daba true y los seis focos salían verdes
+     mintiendo. Comprobado: una página 404 que no es ningún sistema daba true.
+     Esta sonda baja de verdad un JSON conocido: si contesta pero no es JSON,
+     estás detrás de un portal y hay que decirlo en vez de pintar verde. */
+  async function hayPortalCautivo(){
+    try{
+      const r = await conLimite(fetch(INV_URL+'/metricas_publicas.json',{cache:'no-store'}), 9, 'sonda');
+      const t = await r.text();
+      JSON.parse(t);
+      return false;                       // llegó JSON de verdad: la red está limpia
+    }catch(e){
+      if(esLento(e)) return false;         // lento no es lo mismo que portal
+      return !(e instanceof TypeError);    // TypeError = no hay red. Otra cosa = contestó basura
+    }
+  }
+
   async function semaforo(){
     document.querySelectorAll('.apagado').forEach(d=>d.classList.add('revisando'));
+    if(await hayPortalCautivo()){
+      document.querySelectorAll('.apagado').forEach(d=>d.classList.remove('revisando','enpie','caido'));
+      const av=$('#caida');
+      av.innerHTML='<span style="font-size:14px">●</span> Esta red pide iniciar sesión — '
+        +'ábrele en el navegador y acéptala. Mientras, no se puede saber si los sistemas están en pie.';
+      av.classList.add('show');
+      return;
+    }
     const r = await Promise.all(sist.map(async s=>({id:s.id, quien:s.quien, e:await revisarUno(s)})));
     r.forEach(x=>{
       pintarFoco(x.id,x.e);
@@ -831,8 +866,11 @@
       const enCatalogo = f.filter(([,v])=>v.web===true).length;
       const alta7  = f.filter(([k])=>{const t=fechaAlta(k); return t && hoy-t <=  7*DIA;}).length;
       const alta14 = f.filter(([k])=>{const t=fechaAlta(k); return t && hoy-t <= 14*DIA;}).length;
+      const alta30 = f.filter(([k])=>{const t=fechaAlta(k); return t && hoy-t <= 30*DIA;}).length;
       const vend7  = f.filter(([,v])=>v.vendida===true && hoy-(v.actualizado||0) <=  7*DIA).length;
       const vend14 = f.filter(([,v])=>v.vendida===true && hoy-(v.actualizado||0) <= 14*DIA).length;
+      const vend30 = f.filter(([,v])=>v.vendida===true && hoy-(v.actualizado||0) <= 30*DIA).length;
+      const rAlta = ritmo(alta7, alta30);
       const fam = {};
       f.forEach(([,v])=>{ if(v.web===true){ const n=v.familiaNombre||v.familia||'—'; fam[n]=(fam[n]||0)+1; }});
       const top = Object.entries(fam).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -841,15 +879,20 @@
         <div class="ex-n">${num(enCatalogo)}<span class="u">piezas publicadas</span></div>
         <div class="ex-pie">Las que se ven en <b>fotonas.tractopartes.com/catalogo</b>, o sea el catálogo
         que ve el cliente. <b>El patio tiene más</b> — hay piezas que nunca se publicaron.</div>
+        ${ rAlta ? '<div class="ex-pie" style="margin-top:-4px"><b style="color:'+rAlta.color+'">'+esc(rAlta.txt)+'</b> dando de alta piezas.</div>' : '' }
         <div style="margin-top:15px">
         ${filas([
           ['Dadas de alta · 7 días',  num(alta7)],
           ['Dadas de alta · 14 días', num(alta14)],
-          ['Vendidas · 7 días',       num(vend7)],
-          ['Vendidas · 14 días',      num(vend14)]
+          ['Dadas de alta · 30 días', num(alta30)],
+          ['Marcadas vendidas · 7 días',  num(vend7)],
+          ['Marcadas vendidas · 14 días', num(vend14)],
+          ['Marcadas vendidas · 30 días', num(vend30)]
         ])}</div>
-        <div class="ex-nota">Lo vendido es fiel a <b>14 días</b>. Más atrás se queda corto:
-        a 30 días capta el 60% y a 60 el 45%, porque hay piezas que se venden sin haber tenido ficha.</div>
+        <div class="ex-nota"><b>«Marcadas vendidas» no es lo mismo que vendidas.</b> El reloj
+        de la ficha es su última edición, no la venta: si Raúl le corrige el título a una
+        pieza vendida hace meses, brinca al conteo. Ya se pidió que el inventario guarde
+        una fecha de venta de verdad.</div>
         <div style="margin-top:15px">${filas(top.map(([n,c])=>[n,num(c)]))}</div>`;
     }catch(e){
       caja.innerHTML = `<div class="rot">Patio · Raúl</div>
@@ -1019,9 +1062,13 @@
      (d30/30*7). Es la única comparación honesta que se puede hacer con lo
      que manda el robot — no hay histórico de semanas anteriores. */
   function ritmo(d7, d30){
-    if(!d30 || d30 < 10) return null;              // con pocos datos la comparación miente
-    const esperado = d30/30*7;
-    if(esperado < 1) return null;
+    /* Dos arreglos: (1) lo esperado se saca de los 23 días ANTERIORES, no de
+       los 30 que ya incluyen esta semana — si no, la semana se compara contra
+       sí misma. (2) si lo esperado es menos de 10, no se compara: el catálogo
+       gritaba «▼55% abajo» en rojo por 2 visitas contra 4, que es puro ruido. */
+    if(!d30) return null;
+    const esperado = (d30 - d7)/23*7;
+    if(!(esperado >= 10)) return null;
     const pct = Math.round((d7-esperado)/esperado*100);
     if(Math.abs(pct) < 8) return {txt:'va a su ritmo de siempre', color:'#8b8578'};
     return pct > 0
@@ -1065,18 +1112,25 @@
     const prom = conDato.length ? Math.round(conDato.reduce((a,v)=>a+v.vistas_24h,0)/conDato.length) : null;
     caja.innerHTML = `<div class="rot">Videos · Ricardo</div>
       <div class="ex-n">${prom!==null?num(prom):'—'}<span class="u">promedio a 24 h</span></div>
-      <div class="ex-pie">De los ${conDato.length} que ya cumplieron sus 24 horas,
-      de ${lista.length} publicados.</div>
+      <div class="ex-pie">De los ${conDato.length} que ya traen número, de ${lista.length} publicados.</div>
       <div style="margin-top:15px">
       ${filas(lista.map(v=>{
-        if(typeof v.vistas_24h!=='number') return [nombreVideo(v.nombre),'midiendo…'];
+        if(typeof v.vistas_24h!=='number'){
+          /* «midiendo» solo es cierto si de verdad no cumple 24 h. Si ya pasaron
+             y no hay número, es que el robot no lo alcanzó — y eso hay que decirlo. */
+          const p = v.publicado ? new Date(v.publicado+'T12:00:00') : null;
+          const horas = p ? (Date.now()-p.getTime())/3600000 : 0;
+          return [nombreVideo(v.nombre), horas > 30
+            ? '<span style="color:#d2503c">el robot no lo midió</span>'
+            : 'midiendo…'];
+        }
         const dif = prom ? Math.round((v.vistas_24h-prom)/prom*100) : 0;
         const marca = Math.abs(dif)<12 ? '' :
           (dif>0 ? ' <span style="color:#4f9e6a">▲'+dif+'%</span>'
                  : ' <span style="color:#d2503c">▼'+Math.abs(dif)+'%</span>');
         return [nombreVideo(v.nombre), num(v.vistas_24h)+marca];
       }))}</div>
-      <div class="ex-nota">«Midiendo» es a propósito: ese video todavía no cumple sus 24 horas.
+      <div class="ex-nota">«Midiendo» quiere decir que ese video todavía no cumple sus 24 horas.
       Antes de eso <b>no hay número que dar</b>, y no se inventa.</div>
       ${viejo ? '<div class="ex-nota mala">⚠ El robot no ha corrido; puede faltar el más reciente.</div>' : ''}`;
   }
@@ -1114,6 +1168,49 @@
     }
   }
 
+  /* Los papeles de los 45 chasis. Nodo de lectura abierta, 12 KB.
+     SOLO LEE — nunca escribe. Ojo: ese nodo tiene una llave de escritura
+     publicada en el código del inventario; ya está pedido que la cierren. */
+  async function pintarChasis(caja){
+    caja.innerHTML = `<div class="rot">Papeles · Chasis</div>
+      <div class="ex-n"><span class="ex-cargando"></span></div>`;
+    try{
+      if(!cache.chasis){
+        const r = await conLimite(fetch(INV_URL+'/estatus_mercancia/chasis.json',{cache:'no-store'}), 12, 'chasis');
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        cache.chasis = await r.json();
+      }
+      const ch = Object.values(cache.chasis||{});
+      if(!ch.length) throw new Error('no hay chasis');
+      const lim = x => String(x==null?'':x).trim().toUpperCase();
+      const sinCons = ch.filter(x=>lim(x.consecutivo) !== 'COMPLETO');
+      const sinBaja = ch.filter(x=>lim(x.baja) !== 'SI');
+      const sinFact = ch.filter(x=>!lim(x.factura));
+      const pend = ch.filter(x=>lim(x.consecutivo)!=='COMPLETO' || lim(x.baja)!=='SI' || !lim(x.factura));
+      const lista = pend.slice(0,4).map(x=>[
+        (x.marca||'—')+' '+(x.anio||''),
+        '<span style="color:#a89f8e;font-size:11.5px">'+esc(String(x.serie||'sin serie').slice(-8))+'</span>'
+      ]);
+      caja.innerHTML = `<div class="rot">Papeles · Chasis</div>
+        <div class="ex-n">${num(pend.length)}<span class="u">de ${num(ch.length)} con algo pendiente</span></div>
+        <div class="ex-pie">Camiones cuyo papeleo no está cerrado.</div>
+        <div style="margin-top:15px">
+        ${filas([
+          ['Sin consecutivo completo', num(sinCons.length)],
+          ['Sin dar de baja',          num(sinBaja.length)],
+          ['Sin factura',              num(sinFact.length)]
+        ])}</div>
+        ${lista.length ? '<div style="margin-top:15px">'+filas(lista)+'</div>' : ''}
+        <div class="ex-nota">Se edita en el sistema de Maura, en «Estatus de chasis».
+        Aquí solo se ve.</div>`;
+    }catch(e){
+      caja.innerHTML = `<div class="rot">Papeles · Chasis</div>
+        <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#e0765f">Sin datos</div>
+        <div class="ex-nota mala">${ esLento(e) ? 'El internet está muy lento y no contestó a tiempo.'
+          : 'No se pudieron leer: '+esc(String(e.message||e)) }</div>`;
+    }
+  }
+
   function faltante(rot,titulo,razon,color){
     return tarjeta({rot:rot, color:color, clase:'falta', cuerpo:
       `<div class="ex-n">${esc(titulo)}</div><div class="ex-nota">${razon}</div>`});
@@ -1129,13 +1226,14 @@
     const f=new Date();
     $('#exCuando').textContent = f.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
 
+    const cChasis=tarjeta({rot:'Papeles · Chasis', color:'#8a6d1e', cuerpo:''});
     const cRaul=tarjeta({rot:'Patio · Raúl', color:'#e0563f', cuerpo:''});
     // sin este cuerpo de arranque, si la red bloquea gstatic esta tarjeta se
     // quedaba COMPLETAMENTE vacía — ni rueda ni mensaje. Medido en 35 s.
     const cMaura=tarjeta({rot:'Mostrador · Maura', color:'#d8a53f',
       cuerpo:'<div class="ex-n"><span class="ex-cargando"></span></div>'
             +'<div class="ex-pie">Preparando la entrada…</div>'});
-    rej.appendChild(cRaul); rej.appendChild(cMaura);
+    rej.appendChild(cRaul); rej.appendChild(cMaura); rej.appendChild(cChasis);
 
     const cWeb=tarjeta({rot:'Página web',      color:'#3b3fb8', cuerpo:''});
     const cCat=tarjeta({rot:'Catálogo',         color:'#3f9e63', cuerpo:''});
@@ -1155,10 +1253,15 @@
     [].slice.call(rej.querySelectorAll('.ex-t')).forEach(function(t,i){ t.style.transitionDelay=(i*0.05)+'s'; });
 
     pintarRaul(cRaul);
+    pintarChasis(cChasis);
     pintarMetricas(cWeb,cCat,cVid);
     conLimite(cargarSDK(), 12, 'firebase').then(function(){
       const a=appMaura().auth();
-      a.onAuthStateChanged(function(u){ if(u) pintarMaura(cMaura); else pedirLlave(cMaura); });
+      // sin guardar la desuscripción se acumulaba una escucha por cada apertura
+      if(cache.desuscribir){ try{ cache.desuscribir(); }catch(e){} }
+      cache.desuscribir = a.onAuthStateChanged(function(u){
+        if(u) pintarMaura(cMaura); else pedirLlave(cMaura);
+      });
     }).catch(function(e){
       cMaura.innerHTML = '<div class="rot">Mostrador · Maura</div>'
         +'<div class="ex-n" style="font-size:24px;font-family:var(--sans);color:#e0765f">No se pudo</div>'
@@ -1166,7 +1269,10 @@
         +'(pasa en el WiFi de escuelas y oficinas) o que no haya internet.</div>';
     });
   }
-  function cerrarExtras(){ $('#extras').classList.remove('show'); document.body.style.overflow=''; }
+  function cerrarExtras(){
+    if(cache.desuscribir){ try{ cache.desuscribir(); }catch(e){} cache.desuscribir=null; }
+    $('#extras').classList.remove('show'); document.body.style.overflow='';
+  }
 
   $('#exSalir').addEventListener('click',cerrarExtras);
 
