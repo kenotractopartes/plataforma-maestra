@@ -376,6 +376,9 @@
   @media(max-width:760px){
     .extras{padding:26px 20px 50px}
     .ex-salir{top:20px;right:18px}
+    /* la ✕ se encimaba justo sobre el aviso de «números viejos» */
+    .ex-cab{flex-wrap:wrap;padding-right:52px}
+    .ex-cab .cuando{width:100%}
     .ex-t.ancha{grid-column:span 1}     /* si no, deja una columna fantasma de 0px */
   }
 
@@ -616,14 +619,15 @@
     document.querySelectorAll('.fila').forEach((f,k)=>f.classList.toggle('sel',k===sel));
     pintarEscena(sist[sel]); pintarPlaca();
   }
-  let ultimoAbierto = 0;
+  const ultimoAbierto = {};           // uno POR SISTEMA, no uno para todos
   function entrar(){
     const s=sist[sel]; if(!s) return;
     if(s.panel){ abrirExtras(); return; }
-    if(Date.now()-ultimoAbierto < 900) return;   // doble clic abría dos pestañas iguales
-    ultimoAbierto = Date.now();   // Extras no abre una liga: abre su capa
     const d = s.viva || s.url;          // la que contestó; si no, la de siempre
-    if(!d) return;
+    if(!d) return;                      // sin dirección no gasta el turno del siguiente
+    // el candado frena el dedo resbalado en EL MISMO sistema, no abrir dos distintos
+    if(Date.now()-(ultimoAbierto[s.id]||0) < 900) return;
+    ultimoAbierto[s.id] = Date.now();
     try{ localStorage.setItem(LSULT,s.id); }catch(e){}   // para dejarlo listo la próxima
     const sep=d.indexOf('?')===-1?'?':'&';
     window.open(d+sep+'_v='+Date.now(),'_blank','noopener');  // número nuevo = nunca la copia de ayer
@@ -674,7 +678,9 @@
     if(estado==='enpie'||estado==='caido'||estado==='encasa') d.classList.add(estado);
     d.title = estado==='enpie'  ? 'Responde'
             : estado==='caido'  ? 'NO responde'
-            : estado==='encasa' ? 'Vive en tu Mac — ábrelo desde ahí'
+            : estado==='encasa' ? (sist.find(x=>x.id===id)||{}).panel
+                ? 'Es parte de esta misma pantalla'
+                : 'Vive en tu Mac — ábrelo desde ahí'
             : 'Sin dirección';
   }
   /* Un WiFi con portal de login (escuelas, cafés, hoteles) contesta a TODO,
@@ -785,6 +791,8 @@
     try{ localStorage.removeItem(LS); }catch(e){}
     todos=cargar(); refrescarVisibles(); sel=0;
     pintarRiel(); pintarEscena(sist[0]); pintarPlaca();
+    $('#caida').classList.remove('show');   // si no, seguía diciendo «no responde» ya restaurado
+    semaforo();
     $('#modal').classList.remove('show');
   }
 
@@ -1151,7 +1159,7 @@
              y no hay número, es que el robot no lo alcanzó — y eso hay que decirlo. */
           const p = v.publicado ? new Date(v.publicado+'T12:00:00') : null;
           const horas = p ? (Date.now()-p.getTime())/3600000 : 0;
-          return [nombreVideo(v.nombre), horas > 30
+          return [nombreVideo(v.nombre), horas > 36
             ? '<span style="color:#d2503c">el robot no lo midió</span>'
             : 'midiendo…'];
         }
@@ -1161,8 +1169,9 @@
                  : ' <span style="color:#d2503c">▼'+Math.abs(dif)+'%</span>');
         return [nombreVideo(v.nombre), num(v.vistas_24h)+marca];
       }))}</div>
-      <div class="ex-nota">«Midiendo» quiere decir que ese video todavía no cumple sus 24 horas.
-      Antes de eso <b>no hay número que dar</b>, y no se inventa.</div>
+      ${ conDato.length < lista.length ? `<div class="ex-nota">«Midiendo» quiere decir que ese
+      video todavía no cumple sus 24 horas. Antes de eso <b>no hay número que dar</b>,
+      y no se inventa.</div>` : '' }
       ${viejo ? '<div class="ex-nota mala">⚠ El robot no ha corrido; puede faltar el más reciente.</div>' : ''}`;
   }
 
@@ -1250,7 +1259,7 @@
   function abrirExtras(){
     // si ya pasaron 10 min, volver a bajar: si no, los números se congelan
     if(cache.cuando && Date.now()-cache.cuando > 600000){
-      cache.fichas=null; cache.metricas=null; cache.maura=null;
+      cache.fichas=null; cache.metricas=null; cache.maura=null; cache.chasis=null;
     }
     cache.cuando = Date.now();
     const rej=$('#exRej'); rej.innerHTML='';
@@ -1329,6 +1338,10 @@
 
   $('#bAjustes').addEventListener('click',abrirAjustes);
   function cerrarAjustes(){
+    // «Listo» tiene que GUARDAR: el ojito y las flechas ya guardan solos, y si
+    // este botón no lo hiciera, la dirección recién escrita se perdía sin avisar.
+    leer(); guardar(); refrescarVisibles();
+    pintarRiel(); pintarEscena(sist[sel]); pintarPlaca(); semaforo();
     const eraNuestro = history.state && history.state.capa === 'ajustes';
     $('#modal').classList.remove('show');
     if(eraNuestro) history.back();
@@ -1342,13 +1355,19 @@
   document.addEventListener('keydown',e=>{
     // 🔴 con el candado puesto, un Enter abría sistemas sin escribir la contraseña
     const g=$('#gate'); if(g && g.style.display!=='none') return;
-    // el Enter sobre un botón lo maneja el botón, no nosotros (si no, abre doble)
-    if(/^(INPUT|TEXTAREA|BUTTON|A|SELECT)$/.test(e.target.tagName)) return;
-    if($('#extras').classList.contains('show')){
-      if(e.key==='Escape') cerrarExtras();
-      return;
+    /* Esc va PRIMERO y sin importar dónde esté el foco. Antes el guardia de los
+       botones iba arriba, así que si acababas de picarle al ⚙ o a la caja de la
+       contraseña, Esc ya no cerraba nada. */
+    if(e.key==='Escape'){
+      if($('#extras').classList.contains('show')){ cerrarExtras(); return; }
+      if($('#modal').classList.contains('show')){ cerrarAjustes(); return; }
     }
-    if($('#modal').classList.contains('show')){ if(e.key==='Escape') $('#modal').classList.remove('show'); return; }
+    if($('#extras').classList.contains('show')) return;
+    if($('#modal').classList.contains('show')) return;
+    if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;   // escribiendo
+    // Enter sobre un botón lo maneja el botón (si no, abre doble). Las flechas SÍ pasan,
+    // porque si no el teclado se moría en cuanto le picabas a cualquier botón.
+    if(e.key==='Enter' && /^(BUTTON|A)$/.test(e.target.tagName)) return;
     if(e.key==='ArrowDown'){ e.preventDefault(); elegir(Math.min(sel+1,sist.length-1)); }
     if(e.key==='ArrowUp'){   e.preventDefault(); elegir(Math.max(sel-1,0)); }
     if(e.key==='Enter')      entrar();
