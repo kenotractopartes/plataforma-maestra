@@ -357,6 +357,16 @@
   .ex-fila .et{color:#8b8578}
   .ex-fila .va{font-variant-numeric:tabular-nums;font-weight:600;color:var(--hueso);white-space:nowrap}
   /* el total histórico: es el que Keno quiere que impacte */
+  /* las 5 cifras de WhatsApp, al estilo de la pantalla «Campañas y saldo» */
+  .wa-cajas{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px}
+  .wa-caja{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);
+           border-radius:11px;padding:11px 12px}
+  .wa-caja .n{font-family:var(--serif);font-size:25px;line-height:1;color:var(--hueso)}
+  .wa-caja .e{font-size:10.5px;color:#8b8578;margin-top:5px;line-height:1.3}
+  .wa-caja.verde .n{color:#4f9e6a}
+  .wa-caja.pct  .n{color:var(--tc,#cf5a92)}
+  .wa-nums{margin-top:13px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}
+
   .ex-total{margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.10)}
   .ex-total .et{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tc,#6f6a60);font-weight:700}
   .ex-total .va{font-family:var(--serif);font-size:31px;line-height:1.1;color:var(--hueso);
@@ -888,7 +898,7 @@
     'Papeles · Chasis':  {em:'📋', quien:'Chasis',      quees:'Papeles'},
     'Página web':        {em:'🌐', quien:'Página web',  quees:'Lo que ve el cliente'},
     'Catálogo':          {em:'🏷️', quien:'Catálogo',    quees:'Lo que ve el cliente'},
-    'Videos · Ricardo':  {em:'🎬', quien:'Videos',      quees:'Ricardo'},
+    'Videos · Ricardo':  {em:'💬', quien:'WhatsApp',    quees:'Clics al link'},
     'Piezas y envíos':   {em:'📦', quien:'Piezas y envíos', quees:'Patio'}
   };
   function cabecera(rot){
@@ -1191,6 +1201,51 @@
       ${viejo ? '<div class="ex-nota mala">⚠ Estos números están viejos — el robot no ha corrido. Puede ser que la Mac estuviera dormida.</div>' : ''}`;
   }
 
+  /* Los clics al link de WhatsApp. Los CALCULA el sistema de videos —
+     su nodo /clics tiene .read:false y no se puede leer desde aquí — y los
+     publica en /metricas_publicas.wa. Aquí NADA se recalcula salvo el
+     porcentaje, con la misma cuenta que usa su pantalla. */
+  function pintarWhatsApp(caja, w, viejo){
+    const rot = caja.dataset.rot;
+    if(!w){
+      caja.innerHTML = cabecera(rot) + `<div class="rot">${esc(rot)}</div>
+        <div class="ex-n" style="font-size:24px;font-family:var(--sans);color:#5d584e">Falta el robot</div>
+        <div class="ex-nota">El sistema de videos todavía no está publicando los clics.
+        Ya se le pidió; en cuanto los mande, aparecen solos aquí.</div>`;
+      return;
+    }
+    if(w.apagado === true || w.ok === false){
+      caja.innerHTML = cabecera(rot) + `<div class="rot">${esc(rot)}</div>
+        <div class="ex-n" style="font-size:24px;font-family:var(--sans);color:#d2503c">Contador apagado</div>
+        <div class="ex-nota mala">No se están registrando los clics, así que
+        <b>no es que nadie le pique</b> — es que nadie está contando.
+        ${w.motivo ? esc(String(w.motivo)) : ''}</div>`;
+      return;
+    }
+    const vis = Number(w.visitas)||0, toq = Number(w.toques)||0;
+    // el mismo cálculo que su pantalla: toques*100/visitas
+    const pct = (vis && toq <= vis) ? Math.round(toq*100/vis) : null;
+    const cajita = (e,v,cl)=>`<div class="wa-caja ${cl||''}"><div class="n">${v}</div><div class="e">${esc(e)}</div></div>`;
+    // filas() escapa la etiqueta, así que aquí va TEXTO PLANO, sin HTML
+    const nums = (w.numeros||[]).map(x=>[
+      String(x.numero||'—') + (x.etiqueta ? ' ('+String(x.etiqueta)+')' : ''),
+      num(Number(x.toques)||0)
+    ]);
+    caja.innerHTML = cabecera(rot) + `<div class="rot">${esc(rot)}</div>
+      <div class="ex-n">${num(toq)}<span class="u">abrieron WhatsApp</span></div>
+      <div class="ex-pie">De ${num(vis)} que llegaron a la pantalla${
+        w.periodo ? ', en '+esc(String(w.periodo)==='30d'?'30 días':String(w.periodo)) : ''}.</div>
+      <div class="wa-cajas">
+        ${cajita('Llegaron a la pantalla', num(vis))}
+        ${cajita('Abrieron WhatsApp', num(toq), 'verde')}
+        ${pct!==null ? cajita('De cada 100 que llegan', pct+'%', 'pct') : ''}
+        ${cajita('Hoy', num(Number(w.hoy)||0))}
+        ${cajita('Últimos 7 días', num(Number(w.semana)||0))}
+      </div>
+      ${nums.length ? '<div class="wa-nums">'+filas(nums)+'</div>' : ''}
+      ${viejo ? '<div class="ex-nota mala">⚠ El robot no ha corrido; estos números pueden estar viejos.</div>' : ''}`;
+  }
+
   function pintarVideos(caja, lista, viejo){
     if(!lista || !lista.length){ caja.innerHTML = cabecera(caja.dataset.rot) + `<div class="rot">Videos · Ricardo</div>
       <div class="ex-n" style="font-size:26px;font-family:var(--sans);color:#5d584e">Sin datos</div>`; return; }
@@ -1243,7 +1298,7 @@
       }
       pintarSitio(cWeb, 'Página web', m.web, f.viejo);
       pintarSitio(cCat, 'Catálogo',   m.catalogo, f.viejo);
-      pintarVideos(cVid, m.videos, f.viejo);
+      pintarWhatsApp(cVid, m.wa, f.viejo);
     }catch(e){
       [cWeb,cCat,cVid].forEach(c=>{
         c.innerHTML = cabecera(c.dataset.rot) + `<div class="rot">${c.dataset.rot}</div>
