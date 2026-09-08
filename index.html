@@ -356,6 +356,12 @@
   .ex-fila:first-of-type{border-top:0}
   .ex-fila .et{color:#8b8578}
   .ex-fila .va{font-variant-numeric:tabular-nums;font-weight:600;color:var(--hueso);white-space:nowrap}
+  /* el total histórico: es el que Keno quiere que impacte */
+  .ex-total{margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.10)}
+  .ex-total .et{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tc,#6f6a60);font-weight:700}
+  .ex-total .va{font-family:var(--serif);font-size:31px;line-height:1.1;color:var(--hueso);
+                margin-top:5px;display:block}
+  .ex-total .desde{font-size:11px;color:#6f6a60;margin-top:4px}
 
   /* estados */
   .ex-t.cargando .ex-n{color:#4a453d}
@@ -1158,6 +1164,13 @@
         ['30 días',                  num(d.d30||0)],
         ['Promedio por día',         num(porDia)]
       ])}</div>
+      ${ typeof d.total === 'number' ? `<div class="ex-total">
+          <div class="et">Total de personas</div>
+          <span class="va">${num(d.total)}</span>
+          <div class="desde">${ d.desde
+            ? 'Desde el '+esc(String(d.desde))+'. Es lo que Analytics todavía guarda, no necesariamente desde el día uno.'
+            : 'Ojo: no se sabe desde qué fecha cuenta.' }</div>
+        </div>` : '' }
       ${viejo ? '<div class="ex-nota mala">⚠ Estos números están viejos — el robot no ha corrido. Puede ser que la Mac estuviera dormida.</div>' : ''}`;
   }
 
