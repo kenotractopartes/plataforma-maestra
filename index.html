@@ -1138,6 +1138,14 @@
       : {txt:'▼ '+Math.abs(pct)+'% abajo de su ritmo', color:'#d2503c'};
   }
 
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio',
+                 'agosto','septiembre','octubre','noviembre','diciembre'];
+  function fechaLarga(iso){
+    const m = String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!m) return String(iso||'');
+    return Number(m[3])+' de '+MESES[Number(m[2])-1]+' de '+m[1];
+  }
+
   function nombreVideo(n){
     const m = String(n).match(/^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/);
     if(!m) return n;
@@ -1164,13 +1172,22 @@
         ['30 días',                  num(d.d30||0)],
         ['Promedio por día',         num(porDia)]
       ])}</div>
-      ${ typeof d.total === 'number' ? `<div class="ex-total">
-          <div class="et">Total de personas</div>
-          <span class="va">${num(d.total)}</span>
-          <div class="desde">${ d.desde
-            ? 'Desde el '+esc(String(d.desde))+'. Es lo que Analytics todavía guarda, no necesariamente desde el día uno.'
-            : 'Ojo: no se sabe desde qué fecha cuenta.' }</div>
-        </div>` : '' }
+      ${ typeof d.total === 'number' ? (function(){
+          /* El robot manda 'completo'. Si viene false, Analytics YA PERDIÓ el
+             principio y este número NO es el histórico — se rotula distinto.
+             Un número recortado con la etiqueta «TOTAL» es una mentira que se
+             ve enorme y presentable, y eso no va en un tablero de control. */
+          const entero = d.completo !== false;
+          return `<div class="ex-total">
+            <div class="et">${entero ? 'Total de usuarios' : 'Usuarios contados'}</div>
+            <span class="va">${num(d.total)}</span>
+            <div class="desde">${
+              !d.desde ? '⚠ No se sabe desde qué fecha cuenta.'
+              : entero ? 'Todo lo que lleva midiendo, desde el '+esc(fechaLarga(d.desde))+'.'
+              : '<b style="color:#e0765f">Esto NO es el total.</b> Analytics ya soltó lo anterior al '
+                + esc(fechaLarga(d.desde)) + '; solo alcanza hasta ahí.' }</div>
+          </div>`;
+        })() : '' }
       ${viejo ? '<div class="ex-nota mala">⚠ Estos números están viejos — el robot no ha corrido. Puede ser que la Mac estuviera dormida.</div>' : ''}`;
   }
 
