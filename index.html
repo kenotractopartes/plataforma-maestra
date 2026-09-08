@@ -1250,6 +1250,21 @@
         ${cajita('Últimos 7 días', num(Number(w.semana)||0))}
       </div>
       ${nums.length ? '<div class="wa-nums">'+filas(nums)+'</div>' : ''}
+      ${(function(){
+        /* 'total' es el conteo CRUDO de todos los registros del contador —
+           no la suma de visitas y toques. Coinciden solo cuando no hay basura.
+           El sistema de videos manda tambien 'descartados' justo para poder
+           cuadrarlo, y recomendó NO pintarlo como cifra: junto a «visitas» y
+           «toques» se leería como una tercera métrica que no es.
+           Aquí se usa de SEMÁFORO: solo habla cuando la cuenta NO cierra. */
+        if(typeof w.total!=='number' || typeof w.descartados!=='number') return '';
+        const suma = vis + toq + Number(w.descartados);
+        if(suma === w.total) return '';
+        return `<div class="ex-nota mala">⚠ <b>La cuenta del contador no cierra.</b>
+          Registró ${num(w.total)} clics en total, pero al sumarlos por tipo dan
+          ${num(suma)} (${num(vis)} + ${num(toq)} + ${num(w.descartados)} descartados).
+          Algo se está guardando mal — estos números pueden andar cortos.</div>`;
+      })()}
       ${viejo ? '<div class="ex-nota mala">⚠ El robot no ha corrido; estos números pueden estar viejos.</div>' : ''}`;
   }
 
