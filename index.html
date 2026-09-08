@@ -1233,8 +1233,15 @@
     ]);
     caja.innerHTML = cabecera(rot) + `<div class="rot">${esc(rot)}</div>
       <div class="ex-n">${num(toq)}<span class="u">abrieron WhatsApp</span></div>
-      <div class="ex-pie">De ${num(vis)} que llegaron a la pantalla${
-        w.periodo ? ', en '+esc(String(w.periodo)==='30d'?'30 días':String(w.periodo)) : ''}.</div>
+      <div class="ex-pie">De ${num(vis)} que llegaron a la pantalla${(function(){
+        /* Corrección del sistema de videos (7 sep): 'visitas' y 'toques' se
+           cuentan sobre TODO el historial — el parámetro de días solo recorta
+           'por_dia' y 'semana'. Por eso manda periodo:"todo" y no "30d". */
+        const per = String(w.periodo||'');
+        return per==='todo' ? ', desde el principio'
+             : per==='30d'  ? ', en 30 días'
+             : per          ? ', en '+esc(per) : '';
+      })()}.</div>
       <div class="wa-cajas">
         ${cajita('Llegaron a la pantalla', num(vis))}
         ${cajita('Abrieron WhatsApp', num(toq), 'verde')}
