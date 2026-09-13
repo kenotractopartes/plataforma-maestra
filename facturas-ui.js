@@ -21,7 +21,7 @@
   }
   function filtradas(records,{desde='0000',hasta='9999',consulta='',excluidas=[]}={}){
     const excluded=new Set(excluidas),query=String(consulta).trim().toLocaleLowerCase();
-    return records.filter(r=>r.fecha>=desde&&r.fecha<=hasta&&!excluded.has(empresaKey(r.empresa))&&(!query||[r.empresa,r.folio,r.uuid,(r.fuentes||[]).map(f=>f.asunto).join(' ')].join(' ').toLocaleLowerCase().includes(query)));
+    return records.filter(r=>r.fecha>=desde&&r.fecha<=hasta&&!excluded.has(empresaKey(r.empresa))&&(!query||[r.empresa,r.folio,r.uuid,(r.comprobantes||[]).map(c=>[c.empresa,c.folio,c.uuid].join(' ')).join(' '),(r.fuentes||[]).map(f=>f.asunto).join(' ')].join(' ').toLocaleLowerCase().includes(query)));
   }
   const api={fecha,empresaKey,empresaLabel,tarjetas,ordenArchivos,filtradas};
   if(typeof module==='object'&&module.exports)module.exports=api;else root.FacturasUI=api;
