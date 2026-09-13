@@ -296,6 +296,7 @@
   .ex-salir:hover{background:rgba(255,255,255,.14);transform:rotate(90deg)}
 
   /* rejilla de tarjetas */
+  .ex-facturas{display:flex;align-items:center;gap:12px;margin:22px 0 8px;padding:18px 20px;border:1px solid #5d584e;border-radius:14px;color:var(--hueso);text-decoration:none;font-size:18px}.ex-facturas span{flex:1;font-size:13px;color:#a49b89}.ex-facturas:hover,.ex-facturas:focus-visible{background:#2a2823;border-color:#bca36d}@media(max-width:600px){.ex-facturas{flex-wrap:wrap}.ex-facturas span{flex-basis:65%}}
   .ex-rej{
     display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));
     gap:16px;margin-top:30px;max-width:1320px;
@@ -476,6 +477,7 @@
   <button class="ex-salir" id="exSalir" title="Cerrar (Esc)">✕</button>
   <div class="ex-cab"><h2>Extras</h2><span class="cuando" id="exCuando"></span>
     <span class="cuando" id="exSello"></span></div>
+  <a class="ex-facturas" href="./facturas.html">🧾 Facturas <span>Ver documentos e imprimir</span> <b aria-hidden="true">↗</b></a>
   <div class="ex-rej" id="exRej"></div>
 </div>
 
