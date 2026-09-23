@@ -520,9 +520,9 @@
       url:'https://ai-maura-06-26.web.app/',                  emoji:'👑', linea:'Ingresos y gastos',
       texto:'El resumen del negocio, en números, para el dueño.' },
     { id:'videos',     quien:'Videos',         quees:'Producción de reels',   color:'#cf5a92', foto:'img/f2.jpg',
-      url:'https://localhost:8750/', alt:'https://192.168.1.7:8750/', casa:true,
+      url:'https://tmamini.tail522a9c.ts.net:8750/', alt:'', casa:true,
       emoji:'🎬', linea:'El estudio',
-      texto:'Arma los reels y las fotos de producto. Vive en tu Mac, no en internet.' },
+      texto:'Arma los reels y las fotos de producto. Funciona en la Mac mini del negocio; requiere Tailscale conectado.' },
     { id:'extras',     quien:'Extras',         quees:'Los números',           color:'#c9a24b', foto:'img/f2.jpg',
       panel:true,         // no abre una liga: abre la capa de números
       url:'', emoji:'▦', linea:'Cómo va la empresa' },
@@ -572,7 +572,14 @@
       const p=prev.find(x=>x.id===b.id)||{};
       let url=(p.url!==undefined&&p.url!==null)?p.url:b.url;
       const fix=ARREGLOS[String(url).trim().toLowerCase()]; if(fix) url=fix;
-      return Object.assign({},b,{url:url,alt:(p.alt!==undefined?p.alt:b.alt),color:p.color||b.color,
+      let alt=(p.alt!==undefined?p.alt:b.alt);
+      if(b.id==='videos'){
+        const anteriores=new Set(['localhost','127.0.0.1','192.168.1.7','100.122.251.31']);
+        const esAnterior=v=>{try{const u=new URL(v);return anteriores.has(u.hostname)&&u.port==='8750';}catch(e){return false;}};
+        if(esAnterior(url)) url=b.url;
+        if(esAnterior(alt)) alt='';
+      }
+      return Object.assign({},b,{url:url,alt:alt,color:p.color||b.color,
         oculto: viejo ? !!b.oculto : ((typeof p.oculto==='boolean')?p.oculto:!!b.oculto),
         orden:(typeof p.orden==='number')?p.orden:BASE.indexOf(b)});
     }).sort((a,b)=>a.orden-b.orden).map((s,i)=>{s.orden=i;return s;});
@@ -714,7 +721,7 @@
             : estado==='caido'  ? 'NO responde'
             : estado==='encasa' ? (sist.find(x=>x.id===id)||{}).panel
                 ? 'Es parte de esta misma pantalla'
-                : 'Vive en tu Mac — ábrelo desde ahí'
+                : 'Servidor Mac mini — conecta Tailscale para abrir'
             : 'Sin dirección';
   }
   /* Un WiFi con portal de login (escuelas, cafés, hoteles) contesta a TODO,
